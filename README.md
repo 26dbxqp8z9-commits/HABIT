@@ -70,7 +70,7 @@ const AppleClock = () => {
   );
 };
 
-// Updated Weather Widget for Bhubaneswar
+// Weather Widget for Bhubaneswar
 const WeatherWidget = () => {
   const [weather, setWeather] = useState({ 
     temp: '--', 
@@ -84,7 +84,7 @@ const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Coordinates for Bhubaneswar: 20.2961° N, 85.8245° E
+        // Bhubaneswar Coordinates
         const res = await fetch(
           'https://api.open-meteo.com/v1/forecast?latitude=20.2961&longitude=85.8245&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&timezone=auto'
         );
@@ -95,8 +95,9 @@ const WeatherWidget = () => {
         const code = data.current.weather_code;
         let condition = 'Clear';
         if (code >= 1 && code <= 3) condition = 'Cloudy';
+        else if (code >= 45 && code <= 48) condition = 'Foggy';
         else if (code >= 51 && code <= 67) condition = 'Rain';
-        else if (code >= 71 && code <= 77) condition = 'Snow';
+        else if (code >= 71 && code <= 86) condition = 'Snow';
         else if (code >= 95) condition = 'Thunderstorm';
 
         setWeather({
@@ -105,23 +106,20 @@ const WeatherWidget = () => {
           city: 'Bhubaneswar',
           min: Math.round(data.daily.temperature_2m_min[0]),
           max: Math.round(data.daily.temperature_2m_max[0]),
-          code: code,
-          isDay: data.current.is_day
+          code: code
         });
       } catch (error) {
-        console.error("Weather fetch failed:", error);
+        console.error("Weather error:", error);
         setWeather(prev => ({ ...prev, condition: 'Offline' }));
       }
     };
 
     fetchWeather();
-    // Refresh every 30 mins
-    const interval = setInterval(fetchWeather, 30 * 60 * 1000);
+    const interval = setInterval(fetchWeather, 1800000); // 30 mins
     return () => clearInterval(interval);
   }, []);
 
   const getWeatherIcon = (code) => {
-    // WMO Weather interpretation codes
     if (code === 0) return <Sun className="h-20 w-20 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />;
     if (code >= 1 && code <= 3) return <Cloud className="h-20 w-20 text-gray-300 drop-shadow-lg" />;
     if (code >= 45 && code <= 48) return <Wind className="h-20 w-20 text-gray-400" />;
@@ -133,22 +131,17 @@ const WeatherWidget = () => {
 
   return (
     <GlassCard hoverEffect className="h-full min-h-[180px] p-6 text-white flex flex-col justify-between relative overflow-hidden group">
-      {/* Background Decoration based on weather could go here */}
       <div className="absolute -right-6 -top-6 z-0 opacity-50 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
          {getWeatherIcon(weather.code)}
       </div>
-
       <div className="relative z-10">
           <div className="flex flex-col">
               <h2 className="text-xl font-bold tracking-wide drop-shadow-md">{weather.city}</h2>
               <span className="text-6xl font-light tracking-tighter drop-shadow-xl mt-1">{weather.temp}°</span>
           </div>
       </div>
-      
       <div className="relative z-10 flex flex-col gap-1">
-          <div className="font-medium text-lg drop-shadow-md flex items-center gap-2">
-            {weather.condition}
-          </div>
+          <div className="font-medium text-lg drop-shadow-md">{weather.condition}</div>
           <div className="text-sm font-medium text-white/70 flex gap-2">
              <span>H:{weather.max}°</span>
              <span>L:{weather.min}°</span>
@@ -189,11 +182,9 @@ const LineGraph = ({ data }) => {
 const DashboardHome = ({ habits, todos, moments, stats, actions, state }) => {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Clock & Weather */}
       <div className="col-span-1 row-span-2 md:col-span-2"><AppleClock /></div>
       <div className="col-span-1"><WeatherWidget /></div>
 
-      {/* Consistency Card */}
       <GlassCard hoverEffect className="col-span-1 flex flex-col justify-between p-6">
           <div className="flex justify-between items-start">
              <div>
@@ -205,7 +196,6 @@ const DashboardHome = ({ habits, todos, moments, stats, actions, state }) => {
           <LineGraph data={stats.graphData} />
       </GlassCard>
 
-      {/* Habits (Wide) */}
       <GlassCard className="col-span-1 flex min-h-[340px] flex-col p-6 md:col-span-2 lg:col-span-3">
          <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -239,7 +229,6 @@ const DashboardHome = ({ habits, todos, moments, stats, actions, state }) => {
          </div>
       </GlassCard>
 
-      {/* Tasks (Small) */}
       <GlassCard className="col-span-1 row-span-2 flex h-full min-h-[320px] flex-col p-6">
          <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -262,7 +251,6 @@ const DashboardHome = ({ habits, todos, moments, stats, actions, state }) => {
          <form onSubmit={actions.addTodo} className="mt-3"><input value={state.newTodo} onChange={e => actions.setNewTodo(e.target.value)} placeholder="+ New Task" className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:bg-white/10 focus:outline-none" /></form>
       </GlassCard>
 
-      {/* Journal */}
       <GlassCard className="col-span-1 flex h-full min-h-[240px] flex-col p-6">
           <div className="mb-4 flex items-center gap-3">
              <div className="p-2 bg-pink-500/20 rounded-lg"><BookHeart className="h-5 w-5 text-pink-300" /></div>
@@ -291,7 +279,6 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
        <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
        
        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Settings Sidebar */}
           <div className="lg:col-span-4 space-y-2">
              <GlassCard className="p-2">
                 {[
@@ -299,17 +286,11 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
                     { id: 'display', icon: Activity, label: 'Appearance' },
                     { id: 'notifications', icon: Bell, label: 'Notifications' },
                 ].map(item => (
-                    <button 
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === item.id ? 'bg-blue-500/20 text-blue-200' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
-                    >
-                        <item.icon className="w-4 h-4" />
-                        {item.label}
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === item.id ? 'bg-blue-500/20 text-blue-200' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
+                        <item.icon className="w-4 h-4" />{item.label}
                     </button>
                 ))}
              </GlassCard>
-             
              <GlassCard className="p-4 mt-4">
                 <div className="p-4 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-xl border border-white/10 text-center">
                     <div className="w-10 h-10 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-2"><Zap className="w-5 h-5 text-yellow-300" /></div>
@@ -320,45 +301,32 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
              </GlassCard>
           </div>
 
-          {/* Settings Content */}
           <div className="lg:col-span-8">
              <GlassCard className="p-8 min-h-[500px]">
                 {activeTab === 'profile' && (
                     <div className="space-y-6">
                         <div className="flex items-center gap-6 pb-6 border-b border-white/10">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                                {displayName?.[0] || 'U'}
-                            </div>
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-3xl font-bold text-white shadow-xl">{displayName?.[0] || 'U'}</div>
                             <div>
                                 <h2 className="text-xl font-bold text-white">Public Profile</h2>
                                 <p className="text-sm text-white/50">This is how you appear in the app.</p>
                             </div>
                         </div>
-
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Display Name</label>
-                                <input 
-                                    value={localName}
-                                    onChange={(e) => setLocalName(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50"
-                                />
+                                <input value={localName} onChange={(e) => setLocalName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50" />
                             </div>
                              <div>
                                 <label className="block text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Local ID</label>
-                                <div className="flex items-center gap-2 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/50">
-                                    <Shield className="w-4 h-4" />
-                                    <span>anon_{mockId}</span>
-                                </div>
+                                <div className="flex items-center gap-2 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/50"><Shield className="w-4 h-4" /><span>anon_{mockId}</span></div>
                             </div>
-                            
                             <div className="pt-4 flex justify-end">
                                 <button onClick={saveProfile} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">Save Changes</button>
                             </div>
                         </div>
                     </div>
                 )}
-
                 {activeTab === 'display' && (
                     <div className="space-y-6">
                          <h2 className="text-xl font-bold text-white pb-4 border-b border-white/10">Appearance</h2>
@@ -376,7 +344,6 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
                          </div>
                     </div>
                 )}
-
                 {activeTab === 'notifications' && (
                     <div className="space-y-6">
                          <h2 className="text-xl font-bold text-white pb-4 border-b border-white/10">Notifications</h2>
