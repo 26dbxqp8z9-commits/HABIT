@@ -21,7 +21,14 @@ import {
   Bell,
   Droplets,
   CreditCard,
-  Mail
+  Mail,
+  Shield,
+  LogOut,
+  Cloud,
+  CloudRain,
+  CloudLightning,
+  CloudSnow,
+  Wind
 } from 'lucide-react';
 
 // --- Components ---
@@ -63,18 +70,93 @@ const AppleClock = () => {
   );
 };
 
-const WeatherWidget = () => (
-  <GlassCard hoverEffect className="h-full min-h-[160px] p-6 text-white flex flex-col justify-between">
-    <div className="flex justify-between items-start">
-        <div className="flex flex-col">
-            <span className="text-5xl font-bold tracking-tighter drop-shadow-lg">72°</span>
-            <span className="flex items-center gap-1 text-sm font-medium text-white/70 mt-1"><MapPin className="h-3 w-3" /> Cupertino</span>
-        </div>
-        <Sun className="h-12 w-12 text-yellow-300/80 drop-shadow-lg" />
-    </div>
-    <div className="text-sm font-medium text-white/80">Mostly Clear</div>
-  </GlassCard>
-);
+// Updated Weather Widget for Bhubaneswar
+const WeatherWidget = () => {
+  const [weather, setWeather] = useState({ 
+    temp: '--', 
+    condition: 'Loading...', 
+    city: 'Bhubaneswar', 
+    min: '--', 
+    max: '--', 
+    code: 0 
+  });
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        // Coordinates for Bhubaneswar: 20.2961° N, 85.8245° E
+        const res = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=20.2961&longitude=85.8245&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&timezone=auto'
+        );
+        const data = await res.json();
+        
+        if (!data.current || !data.daily) return;
+
+        const code = data.current.weather_code;
+        let condition = 'Clear';
+        if (code >= 1 && code <= 3) condition = 'Cloudy';
+        else if (code >= 51 && code <= 67) condition = 'Rain';
+        else if (code >= 71 && code <= 77) condition = 'Snow';
+        else if (code >= 95) condition = 'Thunderstorm';
+
+        setWeather({
+          temp: Math.round(data.current.temperature_2m),
+          condition: condition,
+          city: 'Bhubaneswar',
+          min: Math.round(data.daily.temperature_2m_min[0]),
+          max: Math.round(data.daily.temperature_2m_max[0]),
+          code: code,
+          isDay: data.current.is_day
+        });
+      } catch (error) {
+        console.error("Weather fetch failed:", error);
+        setWeather(prev => ({ ...prev, condition: 'Offline' }));
+      }
+    };
+
+    fetchWeather();
+    // Refresh every 30 mins
+    const interval = setInterval(fetchWeather, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getWeatherIcon = (code) => {
+    // WMO Weather interpretation codes
+    if (code === 0) return <Sun className="h-20 w-20 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />;
+    if (code >= 1 && code <= 3) return <Cloud className="h-20 w-20 text-gray-300 drop-shadow-lg" />;
+    if (code >= 45 && code <= 48) return <Wind className="h-20 w-20 text-gray-400" />;
+    if (code >= 51 && code <= 67) return <CloudRain className="h-20 w-20 text-blue-400 drop-shadow-lg" />;
+    if (code >= 71 && code <= 86) return <CloudSnow className="h-20 w-20 text-white drop-shadow-lg" />;
+    if (code >= 95) return <CloudLightning className="h-20 w-20 text-yellow-300 drop-shadow-lg" />;
+    return <Sun className="h-20 w-20 text-yellow-400" />;
+  };
+
+  return (
+    <GlassCard hoverEffect className="h-full min-h-[180px] p-6 text-white flex flex-col justify-between relative overflow-hidden group">
+      {/* Background Decoration based on weather could go here */}
+      <div className="absolute -right-6 -top-6 z-0 opacity-50 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
+         {getWeatherIcon(weather.code)}
+      </div>
+
+      <div className="relative z-10">
+          <div className="flex flex-col">
+              <h2 className="text-xl font-bold tracking-wide drop-shadow-md">{weather.city}</h2>
+              <span className="text-6xl font-light tracking-tighter drop-shadow-xl mt-1">{weather.temp}°</span>
+          </div>
+      </div>
+      
+      <div className="relative z-10 flex flex-col gap-1">
+          <div className="font-medium text-lg drop-shadow-md flex items-center gap-2">
+            {weather.condition}
+          </div>
+          <div className="text-sm font-medium text-white/70 flex gap-2">
+             <span>H:{weather.max}°</span>
+             <span>L:{weather.min}°</span>
+          </div>
+      </div>
+    </GlassCard>
+  );
+};
 
 const LineGraph = ({ data }) => {
   if (!data || data.length === 0) return null;
@@ -195,6 +277,7 @@ const DashboardHome = ({ habits, todos, moments, stats, actions, state }) => {
 const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMotion }) => {
   const [localName, setLocalName] = useState(displayName);
   const [activeTab, setActiveTab] = useState('profile');
+  const [mockId] = useState(() => Math.random().toString(36).substr(2, 9));
 
   const saveProfile = () => {
      if(localName !== displayName) {
@@ -261,6 +344,13 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50"
                                 />
                             </div>
+                             <div>
+                                <label className="block text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Local ID</label>
+                                <div className="flex items-center gap-2 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/50">
+                                    <Shield className="w-4 h-4" />
+                                    <span>anon_{mockId}</span>
+                                </div>
+                            </div>
                             
                             <div className="pt-4 flex justify-end">
                                 <button onClick={saveProfile} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">Save Changes</button>
@@ -303,15 +393,25 @@ const SettingsView = ({ displayName, setDisplayName, reduceMotion, setReduceMoti
 // --- Main App ---
 
 const App = () => {
-  const [displayName, setDisplayName] = useState(() => localStorage.getItem('habit_profile_name') || 'Friend');
+  const [displayName, setDisplayName] = useState(() => {
+      try { return localStorage.getItem('habit_profile_name') || 'Friend'; } catch { return 'Friend'; }
+  });
   const [view, setView] = useState('home'); 
-  const [reduceMotion, setReduceMotion] = useState(() => JSON.parse(localStorage.getItem('habit_reduce_motion')) || false);
+  const [reduceMotion, setReduceMotion] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('habit_reduce_motion')) || false; } catch { return false; }
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Data
-  const [habits, setHabits] = useState(() => JSON.parse(localStorage.getItem('habit_data_habits')) || []);
-  const [todos, setTodos] = useState(() => JSON.parse(localStorage.getItem('habit_data_todos')) || []);
-  const [moments, setMoments] = useState(() => JSON.parse(localStorage.getItem('habit_data_moments')) || {});
+  // Data State with error handling
+  const [habits, setHabits] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('habit_data_habits')) || []; } catch { return []; }
+  });
+  const [todos, setTodos] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('habit_data_todos')) || []; } catch { return []; }
+  });
+  const [moments, setMoments] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('habit_data_moments')) || {}; } catch { return {}; }
+  });
   
   const [newHabit, setNewHabit] = useState('');
   const [newTodo, setNewTodo] = useState('');
@@ -452,6 +552,5 @@ const App = () => {
 };
 
 export default App;
-
 
 
