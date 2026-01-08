@@ -49,7 +49,7 @@
 
         /* Glassmorphism Panels */
         .glass-panel {
-            background: rgba(20, 20, 25, 0.4); /* More transparent */
+            background: rgba(20, 20, 25, 0.4); 
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -189,7 +189,7 @@
                     <div class="grid grid-cols-7 gap-2 text-center flex-1 content-start" id="calendarGrid"></div>
                 </div>
 
-                <!-- Main Graph (Center/Right - ENLARGED) -->
+                <!-- Main Graph (Center/Right) -->
                 <div class="lg:col-span-8 glass-panel rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-4 z-10 relative">
                         <div>
@@ -499,6 +499,13 @@
                 
                 // Build Compact Month Grid
                 let gridHTML = '';
+
+                // Headers
+                const days = ['S','M','T','W','T','F','S'];
+                days.forEach(day => {
+                   gridHTML += `<div class="text-[8px] text-gray-500 font-bold mb-1">${day}</div>`;
+                });
+
                 for(let i=0; i<firstDay; i++) gridHTML += `<div></div>`;
                 
                 for(let d=1; d<=daysInMonth; d++) {
@@ -507,19 +514,19 @@
                     const isFuture = new Date(iso) > new Date();
                     
                     let cellClass = 'bg-white/5 hover:bg-white/10 text-gray-600';
-                    let content = `<span class="opacity-0 group-hover:opacity-100 text-[8px]">${d}</span>`;
+                    let content = `<span class="text-[9px] font-medium opacity-70">${d}</span>`;
 
                     if (status === 'done' || status === true) {
                         cellClass = `${color.bg} text-white shadow-sm`;
-                        content = `<i class="fa-solid fa-check text-[8px]"></i>`;
+                        content = `<i class="fa-solid fa-check text-[10px]"></i>`;
                     } else if (status === 'missed') {
                         cellClass = `bg-red-500/20 text-red-400 border border-red-500/30`;
-                        content = `<i class="fa-solid fa-xmark text-[8px]"></i>`;
+                        content = `<i class="fa-solid fa-xmark text-[10px]"></i>`;
                     }
 
                     if (isFuture) {
                         cellClass = 'opacity-10 cursor-default';
-                        content = '';
+                        content = `<span class="text-[9px]">${d}</span>`;
                     }
                     
                     gridHTML += `
