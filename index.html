@@ -30,7 +30,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .check-circle { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .check-circle { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .check-circle:active { transform: scale(0.85); }
 
         .modal-animate { animation: modalUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -46,12 +46,12 @@
         .has-note-dot::after {
             content: '';
             position: absolute;
-            bottom: 4px;
+            bottom: 3px;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background-color: #fbbf24; /* Amber dot */
+            width: 3px;
+            height: 3px;
+            background-color: #fbbf24; 
             border-radius: 50%;
         }
 
@@ -59,8 +59,7 @@
             background: linear-gradient(135deg, #3A3A3C, #1C1C1E);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        /* Input Autofill Fix for Dark Mode */
+
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus, 
@@ -74,22 +73,21 @@
 <body class="min-h-screen selection:bg-blue-500 selection:text-white">
 
     <!-- ================= AUTH SCREEN ================= -->
-    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-[url('https://images.unsplash.com/photo-1483366774565-c783b9f70e2c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-[url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         
         <div class="glass-panel w-full max-w-sm p-8 rounded-3xl relative z-10 shadow-2xl mx-4">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center text-3xl text-black mb-4 shadow-lg">
-                    <i class="fa-solid fa-chart-line"></i>
+                    <i class="fa-solid fa-calendar-days"></i>
                 </div>
                 <h1 class="text-3xl font-bold tracking-tight">Life Tracker</h1>
-                <p class="text-gray-400 text-sm mt-2">Master your habits. Journal your life.</p>
+                <p class="text-gray-400 text-sm mt-2">Monthly Overview & Habits</p>
             </div>
 
             <!-- Login Form -->
             <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
                 <div id="loginError" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl text-center"></div>
-                
                 <div>
                     <label class="text-xs text-gray-500 uppercase ml-1">Email</label>
                     <input type="email" id="loginEmail" placeholder="name@example.com" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
@@ -98,14 +96,13 @@
                     <label class="text-xs text-gray-500 uppercase ml-1">Password</label>
                     <input type="password" id="loginPass" placeholder="••••••••" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-900/50 mt-2">Log In</button>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg mt-2">Log In</button>
                 <p class="text-center text-sm text-gray-400 mt-4">New here? <button type="button" onclick="toggleAuthMode(event)" class="text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer">Create account</button></p>
             </form>
 
             <!-- Signup Form (Hidden) -->
             <form id="signupForm" class="space-y-4 hidden" onsubmit="handleSignup(event)">
                 <div id="signupError" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl text-center"></div>
-
                 <div>
                     <label class="text-xs text-gray-500 uppercase ml-1">Full Name</label>
                     <input type="text" id="signupName" placeholder="John Doe" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
@@ -116,7 +113,7 @@
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 uppercase ml-1">Password</label>
-                    <input type="password" id="signupPass" placeholder="Create a password (min 6 chars)" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <input type="password" id="signupPass" placeholder="Min 6 characters" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
                 <button type="submit" class="w-full bg-white hover:bg-gray-200 text-black font-bold py-3 rounded-xl transition-colors shadow-lg mt-2">Create Account</button>
                 <p class="text-center text-sm text-gray-400 mt-4">Have an account? <button type="button" onclick="toggleAuthMode(event)" class="text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer">Log In</button></p>
@@ -129,20 +126,18 @@
         
         <!-- Header -->
         <header class="sticky top-0 z-40 px-4 sm:px-6 py-4 glass-panel border-b border-white/5">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div>
                     <p class="text-xs font-bold text-blue-400 uppercase tracking-wide mb-0.5" id="headerDateSub">TODAY</p>
                     <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white" id="headerDateMain">Loading...</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <!-- Weather (Hidden on mobile init) -->
                     <div id="weatherWidget" class="hidden sm:flex flex-col items-end opacity-0 transition-opacity duration-500">
                         <div class="flex items-center gap-2">
                             <i id="weatherIcon" class="fa-solid fa-cloud text-gray-300"></i>
                             <span id="weatherTemp" class="text-lg font-bold">--°</span>
                         </div>
                     </div>
-                    <!-- User Profile & Logout -->
                     <div class="relative group cursor-pointer" onclick="handleLogout()">
                         <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border border-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg" id="userAvatar">
                             U
@@ -153,27 +148,28 @@
             </div>
         </header>
 
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-            <!-- Welcome Message -->
-            <div class="px-1">
-                <h2 class="text-3xl font-bold text-white">Hello, <span id="userNameDisplay" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">User</span></h2>
-                <p class="text-gray-400 text-sm">Welcome to your Life Tracker dashboard.</p>
+            <!-- Welcome -->
+            <div class="px-1 flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Hello, <span id="userNameDisplay" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">User</span></h2>
+                    <p class="text-gray-400 text-sm">Here is your progress for <span id="currentMonthLabel" class="text-white font-medium">this month</span>.</p>
+                </div>
             </div>
 
-            <!-- Top Row: Calendar & Moment Note -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Top Row: Calendar & Note -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                <!-- Calendar Widget -->
+                <!-- Main Date Selector -->
                 <div class="glass-panel rounded-3xl p-6 relative">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg font-semibold text-white" id="calendarMonthYear">Month</h2>
                         <div class="flex gap-2">
-                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/5"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/5"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                         </div>
                     </div>
-                    <!-- Days Header -->
                     <div class="grid grid-cols-7 gap-1 mb-2 text-center">
                         <span class="text-xs text-gray-500 font-medium">S</span>
                         <span class="text-xs text-gray-500 font-medium">M</span>
@@ -183,40 +179,39 @@
                         <span class="text-xs text-gray-500 font-medium">F</span>
                         <span class="text-xs text-gray-500 font-medium">S</span>
                     </div>
-                    <!-- Days Grid -->
                     <div class="grid grid-cols-7 gap-1 text-center" id="calendarGrid">
                         <!-- JS Generated -->
                     </div>
                 </div>
 
-                <!-- Best Moment Widget -->
+                <!-- Daily Journal -->
                 <div class="glass-panel rounded-3xl p-6 flex flex-col relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                        <i class="fa-solid fa-quote-right text-6xl text-white"></i>
+                        <i class="fa-solid fa-book-open text-6xl text-white"></i>
                     </div>
                     <div class="mb-4">
                         <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-feather-pointed text-yellow-500"></i> 
-                            Best Moment
+                            <i class="fa-solid fa-pen-fancy text-yellow-500"></i> 
+                            Daily Journal
                         </h2>
-                        <p class="text-xs text-gray-400 mt-1" id="noteDateDisplay">Select a date to journal</p>
+                        <p class="text-xs text-gray-400 mt-1" id="noteDateDisplay">Select a date</p>
                     </div>
-                    <textarea id="dailyNoteInput" class="flex-1 bg-black/20 border border-white/5 rounded-xl p-4 text-sm text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-gray-600 mb-3" placeholder="What was the highlight of this day?"></textarea>
-                    <button onclick="saveNote()" id="saveNoteBtn" class="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-lg transition-all">
-                        Save Note
+                    <textarea id="dailyNoteInput" class="flex-1 bg-black/20 border border-white/5 rounded-xl p-4 text-sm text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-gray-600 mb-3" placeholder="Write about your day..."></textarea>
+                    <button onclick="saveNote()" id="saveNoteBtn" class="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-lg transition-all border border-white/5">
+                        Save Entry
                     </button>
                 </div>
             </div>
 
-            <!-- Stats & Graph -->
+            <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Graph -->
                 <div class="md:col-span-2 glass-panel rounded-3xl p-5 shadow-xl relative">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-semibold text-gray-300">Habit Consistency</h2>
-                        <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">WEEKLY</span>
+                        <h2 class="text-sm font-semibold text-gray-300">Monthly Trend</h2>
+                        <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">ALL HABITS</span>
                     </div>
-                    <div class="h-32 w-full relative">
+                    <div class="h-40 w-full relative">
                         <canvas id="progressChart"></canvas>
                     </div>
                 </div>
@@ -224,14 +219,14 @@
                 <!-- Quick Stats -->
                 <div class="glass-panel rounded-3xl p-5 flex flex-col justify-center space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-400">Completion</span>
+                        <span class="text-xs text-gray-400">Monthly Avg</span>
                         <span class="text-xl font-bold text-blue-400" id="globalProgress">0%</span>
                     </div>
                     <div class="w-full bg-gray-800 rounded-full h-1.5">
                         <div class="bg-blue-500 h-1.5 rounded-full" style="width: 0%" id="globalProgressBar"></div>
                     </div>
-                    <div class="pt-2 flex items-center justify-between border-t border-white/5">
-                        <span class="text-xs text-gray-400">Best Streak</span>
+                    <div class="pt-4 flex items-center justify-between border-t border-white/5 mt-2">
+                        <span class="text-xs text-gray-400">Longest Streak</span>
                         <div class="flex items-center gap-1 text-orange-400">
                             <i class="fa-solid fa-fire text-sm"></i>
                             <span class="text-xl font-bold" id="bestStreak">0</span>
@@ -240,13 +235,14 @@
                 </div>
             </div>
 
-            <!-- Habits List -->
+            <!-- Monthly Habit Grids -->
             <div>
                 <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
-                    My Habits
+                    Habits Overview
                 </h3>
-                <div id="habitList" class="space-y-3 min-h-[100px]">
+                
+                <div id="habitList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Habits Injected Here -->
                 </div>
                 
@@ -255,7 +251,7 @@
                     <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
                         <i class="fa-solid fa-list-check text-2xl text-gray-400"></i>
                     </div>
-                    <p class="text-sm text-gray-400">No habits found. Start your journey.</p>
+                    <p class="text-sm text-gray-400">No habits tracked this month.</p>
                 </div>
             </div>
 
@@ -266,7 +262,7 @@
             <i class="fa-solid fa-plus text-xl"></i>
         </button>
 
-    </div> <!-- End Main App -->
+    </div>
 
     <!-- Add Habit Modal -->
     <div id="addModal" class="fixed inset-0 z-50 hidden">
@@ -298,15 +294,11 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- DATA & STATE ---
-        let currentUser = null;
-        let userData = { habits: [], notes: {} }; 
-        
-        // Calendar State
-        let currentCalendarDate = new Date();
-        let selectedDateISO = new Date().toISOString().split('T')[0];
+        // --- CONSTANTS ---
+        const SESSION_KEY = 'lifetracker_session_v2';
+        const DB_KEY = 'lifetracker_db_v2';
+        const DATA_PREFIX = 'lifetracker_data_v2_';
 
-        // Constants
         const COLORS = [
             { bg: 'bg-red-500', text: 'text-red-400' },
             { bg: 'bg-orange-500', text: 'text-orange-400' },
@@ -318,27 +310,25 @@
             { bg: 'bg-pink-500', text: 'text-pink-400' },
         ];
         const ICONS = ['fa-book', 'fa-person-running', 'fa-glass-water', 'fa-moon', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-guitar', 'fa-pen-nib', 'fa-brain', 'fa-bicycle', 'fa-money-bill'];
+
+        // --- STATE ---
+        let currentUser = null;
+        let userData = { habits: [], notes: {} };
         
-        let selectedColorIndex = 5;
-        let selectedIconIndex = 1;
+        // This date controls the ENTIRE view (Calendar, Habits, Chart)
+        let viewDate = new Date(); 
+        let selectedDateISO = new Date().toISOString().split('T')[0];
         let chartInstance = null;
 
-        // --- AUTHENTICATION ---
-        // Using 'lifetracker_' prefix to ensure clean state and avoid conflicts
-        const SESSION_KEY = 'lifetracker_current_session';
-        const DB_KEY = 'lifetracker_users_db';
-        const DATA_PREFIX = 'lifetracker_data_';
-
+        // --- AUTH ---
         function initApp() {
-            // Check session
-            const storedUser = localStorage.getItem(SESSION_KEY);
-            if (storedUser) {
+            const stored = localStorage.getItem(SESSION_KEY);
+            if (stored) {
                 try {
-                    currentUser = JSON.parse(storedUser);
+                    currentUser = JSON.parse(stored);
                     loadUserData();
                     showApp();
                 } catch(e) {
-                    console.error("Session corrupted", e);
                     localStorage.removeItem(SESSION_KEY);
                     showAuth();
                 }
@@ -353,27 +343,21 @@
         }
 
         function toggleAuthMode(e) {
-            if(e) e.preventDefault(); // Prevent jump
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
+            if(e) e.preventDefault();
+            const login = document.getElementById('loginForm');
+            const signup = document.getElementById('signupForm');
+            const isLogin = !login.classList.contains('hidden');
             
-            // Clear errors
             document.getElementById('loginError').classList.add('hidden');
             document.getElementById('signupError').classList.add('hidden');
             
-            if (loginForm.classList.contains('hidden')) {
-                loginForm.classList.remove('hidden');
-                signupForm.classList.add('hidden');
+            if(isLogin) {
+                login.classList.add('hidden');
+                signup.classList.remove('hidden');
             } else {
-                loginForm.classList.add('hidden');
-                signupForm.classList.remove('hidden');
+                login.classList.remove('hidden');
+                signup.classList.add('hidden');
             }
-        }
-
-        function showError(elementId, message) {
-            const el = document.getElementById(elementId);
-            el.innerText = message;
-            el.classList.remove('hidden');
         }
 
         function handleSignup(e) {
@@ -382,27 +366,15 @@
             const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const pass = document.getElementById('signupPass').value.trim();
             
-            if(!name || !email || !pass) return showError('signupError', "All fields are required");
-            if(pass.length < 6) return showError('signupError', "Password must be at least 6 characters");
-            
-            // Get User DB
-            let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            
-            // Check duplicates
-            if(users.find(u => u.email === email)) return showError('signupError', "Email already registered");
+            if(!name || !email || !pass) return showError('signupError', "Fill all fields");
+            if(pass.length < 6) return showError('signupError', "Password too short");
 
-            // Create User
-            const newUser = { 
-                id: 'user_' + Date.now() + Math.random().toString(36).substr(2, 9), 
-                name: name,
-                email: email, 
-                password: pass 
-            };
-            
+            let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            if(users.find(u => u.email === email)) return showError('signupError', "Email taken");
+
+            const newUser = { id: 'u_' + Date.now(), name, email, password: pass };
             users.push(newUser);
             localStorage.setItem(DB_KEY, JSON.stringify(users));
-            
-            // Log them in immediately
             loginUser(newUser);
         }
 
@@ -411,48 +383,41 @@
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const pass = document.getElementById('loginPass').value.trim();
             
-            if(!email || !pass) return showError('loginError', "Please fill in all fields");
-
             let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
             const user = users.find(u => u.email === email && u.password === pass);
             
-            if(user) {
-                loginUser(user);
-            } else {
-                showError('loginError', "Invalid email or password");
-            }
+            if(user) loginUser(user);
+            else showError('loginError', "Invalid credentials");
         }
 
         function loginUser(user) {
             currentUser = user;
-            // Persist session
             localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-            
-            // Reset Forms
             document.getElementById('loginForm').reset();
             document.getElementById('signupForm').reset();
-            document.getElementById('loginError').classList.add('hidden');
-            document.getElementById('signupError').classList.add('hidden');
-
             loadUserData();
             showApp();
         }
 
         function handleLogout() {
-            if(confirm("Are you sure you want to log out?")) {
+            if(confirm("Log out?")) {
                 localStorage.removeItem(SESSION_KEY);
-                chartInstance = null;
                 currentUser = null;
-                userData = { habits: [], notes: {} };
                 initApp();
             }
         }
 
-        // --- DATA MANAGEMENT ---
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.classList.remove('hidden');
+        }
+
+        // --- DATA ---
         function loadUserData() {
             if(!currentUser) return;
-            const data = localStorage.getItem(DATA_PREFIX + currentUser.id);
-            userData = data ? JSON.parse(data) : { habits: [], notes: {} };
+            const raw = localStorage.getItem(DATA_PREFIX + currentUser.id);
+            userData = raw ? JSON.parse(raw) : { habits: [], notes: {} };
         }
 
         function saveData() {
@@ -460,181 +425,172 @@
             localStorage.setItem(DATA_PREFIX + currentUser.id, JSON.stringify(userData));
         }
 
+        // --- CORE UI UPDATE ---
         function showApp() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
             
-            // Update UI with User Info
-            document.getElementById('userAvatar').innerText = currentUser.name.charAt(0).toUpperCase();
-            document.getElementById('userNameDisplay').innerText = currentUser.name.split(' ')[0]; // First name only
+            document.getElementById('userAvatar').innerText = currentUser.name[0].toUpperCase();
+            document.getElementById('userNameDisplay').innerText = currentUser.name.split(' ')[0];
             
             updateHeaderDate();
-            renderCalendar();
-            renderHabits();
-            setupModal();
-            loadNoteForDate(selectedDateISO);
+            renderAllViews();
             initWeather();
-            
-            setTimeout(initChart, 300); 
+            setupModal();
         }
 
-        // --- CALENDAR LOGIC ---
-        function renderCalendar() {
-            const year = currentCalendarDate.getFullYear();
-            const month = currentCalendarDate.getMonth();
+        function renderAllViews() {
+            // This function syncs everything to viewDate
+            renderCalendarWidget();
+            renderHabitsMonthly();
+            loadNoteForDate(selectedDateISO);
+            updateGlobalStats();
+            setTimeout(initChart, 200);
             
-            document.getElementById('calendarMonthYear').innerText = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
-            
+            // Update Month Label
+            document.getElementById('currentMonthLabel').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        }
+
+        // --- CALENDAR WIDGET ---
+        function renderCalendarWidget() {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            document.getElementById('calendarMonthYear').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            for(let i=0; i<firstDay; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
+            for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
 
             const todayISO = new Date().toISOString().split('T')[0];
 
             for(let d=1; d<=daysInMonth; d++) {
-                const dateISO = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                
-                const isSelected = dateISO === selectedDateISO;
-                const isToday = dateISO === todayISO;
-                const hasNote = userData.notes[dateISO] && userData.notes[dateISO].trim() !== "";
+                const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isSelected = iso === selectedDateISO;
+                const isToday = iso === todayISO;
+                const hasNote = userData.notes[iso] && userData.notes[iso].trim() !== "";
 
-                const div = document.createElement('div');
-                div.className = `calendar-day h-8 w-8 rounded-full flex items-center justify-center text-xs cursor-pointer relative ${isSelected ? 'selected-date' : 'text-gray-300'} ${isToday && !isSelected ? 'border border-blue-500 text-blue-400' : ''} ${hasNote ? 'has-note-dot' : ''}`;
-                div.innerText = d;
-                div.onclick = () => selectDate(dateISO);
-                grid.appendChild(div);
+                grid.innerHTML += `
+                    <div onclick="selectDate('${iso}')" 
+                         class="calendar-day h-8 w-8 rounded-full flex items-center justify-center text-xs cursor-pointer relative 
+                         ${isSelected ? 'selected-date' : 'text-gray-300'} 
+                         ${isToday && !isSelected ? 'border border-blue-500 text-blue-400' : ''} 
+                         ${hasNote ? 'has-note-dot' : ''}">
+                        ${d}
+                    </div>
+                `;
             }
         }
 
         function changeMonth(dir) {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir);
-            renderCalendar();
+            viewDate.setMonth(viewDate.getMonth() + dir);
+            renderAllViews();
         }
 
         function selectDate(iso) {
             selectedDateISO = iso;
-            renderCalendar(); 
+            renderCalendarWidget(); // Update dots/selection
             loadNoteForDate(iso);
         }
 
-        // --- NOTES LOGIC ---
-        function loadNoteForDate(iso) {
-            const dateParts = iso.split('-');
-            const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]);
-            const displayDate = localDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
-            
-            document.getElementById('noteDateDisplay').innerText = `Journaling for ${displayDate}`;
-            const note = userData.notes[iso] || "";
-            document.getElementById('dailyNoteInput').value = note;
-        }
-
-        function saveNote() {
-            const val = document.getElementById('dailyNoteInput').value;
-            userData.notes[selectedDateISO] = val;
-            saveData();
-            renderCalendar(); 
-            
-            const btn = document.getElementById('saveNoteBtn');
-            const originalText = btn.innerText;
-            btn.innerText = "Saved!";
-            btn.classList.add('bg-green-600', 'text-white');
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.classList.remove('bg-green-600', 'text-white');
-            }, 1000);
-        }
-
-        // --- HABIT TRACKER LOGIC ---
-        function renderHabits() {
+        // --- HABITS (MONTHLY VIEW) ---
+        function renderHabitsMonthly() {
             const list = document.getElementById('habitList');
             list.innerHTML = '';
-            
-            if(userData.habits.length === 0) document.getElementById('emptyState').classList.remove('hidden');
-            else document.getElementById('emptyState').classList.add('hidden');
 
-            let totalChecksToday = 0;
-            let maxStreak = 0;
-            const todayISO = new Date().toISOString().split('T')[0];
-
-            const weekDates = [];
-            for(let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                weekDates.push({
-                    iso: d.toISOString().split('T')[0],
-                    letter: ['S','M','T','W','T','F','S'][d.getDay()]
-                });
+            if(userData.habits.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
             }
+            document.getElementById('emptyState').classList.add('hidden');
+
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay(); // for spacing
 
             userData.habits.forEach(habit => {
                 const color = COLORS[habit.colorIndex] || COLORS[5];
-                if(habit.history[todayISO]) totalChecksToday++;
-
-                let streak = 0;
-                let d = new Date();
-                if(!habit.history[todayISO]) d.setDate(d.getDate() - 1);
                 
-                while(true) {
-                    const iso = d.toISOString().split('T')[0];
-                    if(habit.history[iso]) { streak++; d.setDate(d.getDate()-1); }
-                    else break;
+                // Build Mini Month Grid
+                let gridHTML = '';
+                // Spacers
+                for(let i=0; i<firstDay; i++) gridHTML += `<div></div>`;
+                // Days
+                for(let d=1; d<=daysInMonth; d++) {
+                    const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const isDone = habit.history[iso];
+                    const isFuture = new Date(iso) > new Date();
+                    
+                    gridHTML += `
+                        <div onclick="toggleHabit('${habit.id}', '${iso}')" 
+                             class="h-6 w-6 sm:h-7 sm:w-7 rounded-md flex items-center justify-center text-[10px] cursor-pointer transition-all border border-white/5
+                             ${isDone ? color.bg + ' text-white shadow-sm' : 'bg-white/5 hover:bg-white/10 text-gray-500'}
+                             ${isFuture ? 'opacity-30 cursor-default' : ''}">
+                             ${d}
+                        </div>
+                    `;
                 }
-                if(streak > maxStreak) maxStreak = streak;
+
+                // Calculate Streak
+                let streak = calculateStreak(habit);
 
                 const card = document.createElement('div');
-                card.className = `glass-panel rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 ${color.bg.replace('bg-', 'border-')}`;
-                
-                let weekHTML = weekDates.map((day, idx) => {
-                    const isDone = habit.history[day.iso];
-                    const isToday = idx === 6;
-                    return `
-                    <div class="flex flex-col items-center gap-1 group" onclick="toggleHabit('${habit.id}', '${day.iso}')">
-                        <span class="text-[9px] ${isToday ? 'text-white font-bold' : 'text-gray-500'}">${day.letter}</span>
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center cursor-pointer transition-all ${isDone ? color.bg + ' text-white shadow-lg' : 'bg-white/5 hover:bg-white/10 group-hover:bg-white/20'}">
-                            <i class="fa-solid fa-check text-[10px] sm:text-xs ${isDone ? '' : 'hidden'}"></i>
-                        </div>
-                    </div>`;
-                }).join('');
-
+                card.className = `glass-panel rounded-2xl p-5 border-t-4 ${color.bg.replace('bg-', 'border-')}`;
                 card.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${color.text} text-lg border border-white/5">
-                            <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-100 text-sm sm:text-base">${habit.name}</h3>
-                            <div class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                <i class="fa-solid fa-fire text-orange-500"></i> ${streak} day streak
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${color.text} text-lg border border-white/5">
+                                <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-100">${habit.name}</h3>
+                                <div class="text-xs text-gray-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} day streak
+                                </div>
                             </div>
                         </div>
+                        <button onclick="deleteHabit('${habit.id}')" class="text-gray-600 hover:text-red-400 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
-                    <div class="flex items-center gap-4 self-end sm:self-auto">
-                        <div class="flex gap-1 sm:gap-2">${weekHTML}</div>
-                        <button onclick="deleteHabit('${habit.id}')" class="text-gray-600 hover:text-red-400 p-2 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                    
+                    <div class="grid grid-cols-7 gap-1 text-center">
+                        <span class="text-[9px] text-gray-600">S</span><span class="text-[9px] text-gray-600">M</span><span class="text-[9px] text-gray-600">T</span><span class="text-[9px] text-gray-600">W</span><span class="text-[9px] text-gray-600">T</span><span class="text-[9px] text-gray-600">F</span><span class="text-[9px] text-gray-600">S</span>
+                        ${gridHTML}
                     </div>
                 `;
                 list.appendChild(card);
             });
+        }
 
-            const percent = userData.habits.length ? Math.round((totalChecksToday / userData.habits.length) * 100) : 0;
-            document.getElementById('globalProgress').innerText = `${percent}%`;
-            document.getElementById('globalProgressBar').style.width = `${percent}%`;
-            document.getElementById('bestStreak').innerText = maxStreak;
-
-            updateChart();
+        function calculateStreak(habit) {
+            let streak = 0;
+            let d = new Date();
+            const todayISO = d.toISOString().split('T')[0];
+            
+            if(!habit.history[todayISO]) d.setDate(d.getDate() - 1);
+            
+            while(true) {
+                const iso = d.toISOString().split('T')[0];
+                if(habit.history[iso]) { streak++; d.setDate(d.getDate()-1); }
+                else break;
+            }
+            return streak;
         }
 
         function toggleHabit(id, iso) {
+            // Prevent future toggles
+            if(new Date(iso) > new Date()) return;
+            
             const h = userData.habits.find(x => x.id === id);
             if(h) {
                 if(h.history[iso]) delete h.history[iso];
                 else h.history[iso] = true;
-                saveData(); renderHabits();
+                saveData(); 
+                renderHabitsMonthly();
+                updateGlobalStats();
+                updateChart();
             }
         }
 
@@ -642,37 +598,75 @@
             e.preventDefault();
             const name = document.getElementById('habitName').value.trim();
             if(name) {
+                let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 5;
+                let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 1;
+
                 userData.habits.push({
                     id: Date.now().toString(),
                     name,
-                    colorIndex: selectedColorIndex,
-                    iconIndex: selectedIconIndex,
+                    colorIndex,
+                    iconIndex,
                     history: {}
                 });
-                saveData(); closeModal(); renderHabits();
+                saveData(); closeModal(); renderAllViews();
                 document.getElementById('habitName').value = '';
             }
         }
 
         function deleteHabit(id) {
-            if(confirm("Delete this habit permanently?")) {
+            if(confirm("Delete habit?")) {
                 userData.habits = userData.habits.filter(h => h.id !== id);
-                saveData(); renderHabits();
+                saveData(); renderAllViews();
             }
         }
 
-        // --- CHART & WEATHER ---
+        // --- STATS & CHART ---
+        function updateGlobalStats() {
+            if(userData.habits.length === 0) {
+                document.getElementById('globalProgress').innerText = "0%";
+                document.getElementById('globalProgressBar').style.width = "0%";
+                return;
+            }
+
+            // Calculate Monthly Average
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalPossible = userData.habits.length * daysInMonth;
+            let totalDone = 0;
+
+            // Count checks in THIS month only
+            userData.habits.forEach(h => {
+                for(let d=1; d<=daysInMonth; d++) {
+                    const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    if(h.history[iso]) totalDone++;
+                }
+            });
+
+            // Prevent div by zero for current month if empty (technically covered by length check but good safety)
+            const percent = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+            document.getElementById('globalProgress').innerText = `${percent}%`;
+            document.getElementById('globalProgressBar').style.width = `${percent}%`;
+
+            // Max Streak across all habits
+            let max = 0;
+            userData.habits.forEach(h => {
+                const s = calculateStreak(h);
+                if(s > max) max = s;
+            });
+            document.getElementById('bestStreak').innerText = max;
+        }
+
         function initChart() {
             const ctxCanvas = document.getElementById('progressChart');
             if(!ctxCanvas) return;
             const ctx = ctxCanvas.getContext('2d');
             
-            const labels = [];
-            for(let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                labels.push(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]);
-            }
+            // X Axis: 1 to daysInMonth
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
 
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
@@ -685,14 +679,15 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        data: [0,0,0,0,0,0,0], 
+                        label: 'Completion',
+                        data: [], 
                         borderColor: '#60a5fa',
                         backgroundColor: gradient,
                         borderWidth: 2,
-                        pointBackgroundColor: '#2563eb',
-                        pointBorderColor: '#fff',
+                        pointRadius: 0, 
+                        pointHoverRadius: 4,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.3
                     }]
                 },
                 options: {
@@ -701,8 +696,9 @@
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { display: false, min: 0, max: 100 }, 
-                        x: { grid: { display: false }, ticks: { color: '#6b7280', font: {size: 9} } } 
-                    }
+                        x: { display: false } 
+                    },
+                    interaction: { intersect: false, mode: 'index' }
                 }
             });
             updateChart();
@@ -710,22 +706,58 @@
 
         function updateChart() {
             if(!chartInstance) return;
-            
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
             const data = [];
-            for(let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const iso = d.toISOString().split('T')[0];
-                
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let count = 0;
-                let total = userData.habits.length || 1; 
+                let total = userData.habits.length || 1;
                 userData.habits.forEach(h => { if(h.history[iso]) count++; });
                 
-                data.push(userData.habits.length ? Math.round((count / total) * 100) : 0);
+                // Don't show drop to 0 for future days
+                if(new Date(iso) > new Date()) data.push(null);
+                else data.push(userData.habits.length ? Math.round((count / total) * 100) : 0);
             }
-            
+
+            chartInstance.data.labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
             chartInstance.data.datasets[0].data = data;
             chartInstance.update();
+        }
+
+        // --- MISC ---
+        function loadNoteForDate(iso) {
+            const dateParts = iso.split('-');
+            const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]);
+            const displayDate = localDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
+            
+            document.getElementById('noteDateDisplay').innerText = displayDate;
+            const note = userData.notes[iso] || "";
+            document.getElementById('dailyNoteInput').value = note;
+        }
+
+        function saveNote() {
+            const val = document.getElementById('dailyNoteInput').value;
+            userData.notes[selectedDateISO] = val;
+            saveData();
+            renderCalendarWidget(); 
+            
+            const btn = document.getElementById('saveNoteBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Saved";
+            btn.classList.add('bg-green-500', 'text-white');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-green-500', 'text-white');
+            }, 1000);
+        }
+
+        function updateHeaderDate() {
+            const now = new Date();
+            document.getElementById('headerDateMain').innerText = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('headerDateSub').innerText = now.toLocaleDateString('en-US', { weekday: 'long' });
         }
 
         function initWeather() {
@@ -735,7 +767,6 @@
                         const { latitude, longitude } = pos.coords;
                         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
                         const data = await res.json();
-                        
                         document.getElementById('weatherTemp').innerText = Math.round(data.current_weather.temperature) + "°";
                         document.getElementById('weatherWidget').classList.remove('opacity-0');
                     } catch(e) {}
@@ -743,26 +774,38 @@
             }
         }
 
-        // --- UTILS ---
-        function updateHeaderDate() {
-            const now = new Date();
-            document.getElementById('headerDateMain').innerText = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            document.getElementById('headerDateSub').innerText = now.toLocaleDateString('en-US', { weekday: 'long' });
+        function setupModal() {
+            window.selectedColorIndex = 5;
+            window.selectedIconIndex = 1;
+
+            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => 
+                `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 flex-shrink-0 transition-transform hover:scale-110" data-idx="${i}"></div>`
+            ).join('');
+            
+            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => 
+                `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg transition-colors" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`
+            ).join('');
+            setupModalUI();
         }
 
-        function setupModal() {
-            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => 
-                `<div onclick="selectedColorIndex=${i}; setupModal()" class="cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 ${i===selectedColorIndex?'border-white':'border-transparent'} flex-shrink-0"></div>`
-            ).join('');
-            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => 
-                `<div onclick="selectedIconIndex=${i}; setupModal()" class="cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg ${i===selectedIconIndex?'bg-white text-black':'bg-white/10 text-gray-400'}"><i class="fa-solid ${icon}"></i></div>`
-            ).join('');
+        function setupModalUI() {
+            document.querySelectorAll('.color-opt').forEach(el => {
+                const idx = parseInt(el.dataset.idx);
+                el.style.borderColor = idx === window.selectedColorIndex ? 'white' : 'transparent';
+            });
+            document.querySelectorAll('.icon-opt').forEach(el => {
+                const idx = parseInt(el.dataset.idx);
+                if(idx === window.selectedIconIndex) {
+                    el.className = 'icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg bg-white text-black';
+                } else {
+                    el.className = 'icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg bg-white/10 text-gray-400 hover:bg-white/20';
+                }
+            });
         }
 
         function openModal() { document.getElementById('addModal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('addModal').classList.add('hidden'); }
 
-        // Start
         window.onload = initApp;
 
     </script>
