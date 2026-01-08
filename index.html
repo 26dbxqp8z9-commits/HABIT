@@ -9,313 +9,310 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Base Apple-like Theme */
+        /* --- LIQUID OS THEME --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000000;
+            background-color: #050505;
             color: #ffffff;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* Glassmorphism */
+        /* Ambient Background Blobs */
+        .liquid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; animation-delay: 0s; } /* Indigo */
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #db2777; animation-delay: -5s; } /* Pink */
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #0891b2; animation-delay: -10s; opacity: 0.3; } /* Cyan */
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* Glassmorphism Panels */
         .glass-panel {
-            background: rgba(28, 28, 30, 0.65);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(20, 20, 25, 0.4); /* More transparent */
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        /* Utilities */
+        /* --- UTILITIES --- */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .check-circle { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .check-circle:active { transform: scale(0.85); }
+        .modal-animate { animation: modalUp 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+        @keyframes modalUp { from { transform: translateY(100%) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-        .modal-animate { animation: modalUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes modalUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Calendar Specifics */
-        .calendar-day { transition: background 0.2s; }
-        .calendar-day:hover { background: rgba(255,255,255,0.1); }
-        .selected-date { background: #3b82f6 !important; color: white !important; font-weight: bold; }
-        .has-note-dot::after {
-            content: '';
-            position: absolute;
-            bottom: 3px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 3px;
-            height: 3px;
-            background-color: #fbbf24; 
-            border-radius: 50%;
+        /* Calendar Styling */
+        .calendar-day { transition: all 0.2s; }
+        .calendar-day:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+        .selected-date { 
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important; 
+            color: white !important; 
+            font-weight: bold; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
+        .has-note-dot::after {
+            content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 4px; background-color: #fbbf24; border-radius: 50%;
+            box-shadow: 0 0 8px #fbbf24;
+        }
+
+        /* Tick/Cross Interaction */
+        .status-cell { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .status-cell:active { transform: scale(0.8); }
 
         .fab-gradient {
-            background: linear-gradient(135deg, #3A3A3C, #1C1C1E);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
         }
 
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px #1C1C1E inset !important;
-            -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
+        /* Input Fixes */
+        input, textarea { background: rgba(0,0,0,0.3) !important; color: white !important; }
+        input:focus, textarea:focus { background: rgba(0,0,0,0.5) !important; border-color: rgba(255,255,255,0.2) !important; }
+        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #111 inset !important; -webkit-text-fill-color: white !important; }
     </style>
 </head>
-<body class="min-h-screen selection:bg-blue-500 selection:text-white">
+<body class="min-h-screen selection:bg-pink-500 selection:text-white">
+
+    <!-- LIQUID BACKGROUND -->
+    <div class="liquid-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
     <!-- ================= AUTH SCREEN ================= -->
-    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-[url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-        
-        <div class="glass-panel w-full max-w-sm p-8 rounded-3xl relative z-10 shadow-2xl mx-4">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center text-3xl text-black mb-4 shadow-lg">
-                    <i class="fa-solid fa-calendar-days"></i>
+    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 shadow-2xl border border-white/10">
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center text-3xl text-white mb-5 shadow-lg shadow-pink-500/20">
+                    <i class="fa-solid fa-infinity"></i>
                 </div>
-                <h1 class="text-3xl font-bold tracking-tight">Life Tracker</h1>
-                <p class="text-gray-400 text-sm mt-2">Monthly Overview & Habits</p>
+                <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Life Tracker</h1>
+                <p class="text-gray-400 text-sm mt-2 font-medium">Design your life, day by day.</p>
             </div>
 
-            <!-- Login Form -->
+            <!-- Forms -->
             <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
-                <div id="loginError" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl text-center"></div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase ml-1">Email</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
+                <div class="space-y-4">
+                    <input type="email" id="loginEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
+                    <input type="password" id="loginPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                 </div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase ml-1">Password</label>
-                    <input type="password" id="loginPass" placeholder="••••••••" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Enter Dashboard</button>
+                <div class="text-center mt-6">
+                    <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Create an account</button>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg mt-2">Log In</button>
-                <p class="text-center text-sm text-gray-400 mt-4">New here? <button type="button" onclick="toggleAuthMode(event)" class="text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer">Create account</button></p>
             </form>
 
-            <!-- Signup Form (Hidden) -->
             <form id="signupForm" class="space-y-4 hidden" onsubmit="handleSignup(event)">
-                <div id="signupError" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl text-center"></div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase ml-1">Full Name</label>
-                    <input type="text" id="signupName" placeholder="John Doe" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <div id="signupError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
+                <div class="space-y-3">
+                    <input type="text" id="signupName" placeholder="Full Name" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="email" id="signupEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="password" id="signupPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
                 </div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase ml-1">Email</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Join Now</button>
+                <div class="text-center mt-6">
+                    <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Back to Login</button>
                 </div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase ml-1">Password</label>
-                    <input type="password" id="signupPass" placeholder="Min 6 characters" required class="w-full bg-[#1C1C1E] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                </div>
-                <button type="submit" class="w-full bg-white hover:bg-gray-200 text-black font-bold py-3 rounded-xl transition-colors shadow-lg mt-2">Create Account</button>
-                <p class="text-center text-sm text-gray-400 mt-4">Have an account? <button type="button" onclick="toggleAuthMode(event)" class="text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer">Log In</button></p>
             </form>
         </div>
     </div>
 
     <!-- ================= MAIN APP ================= -->
-    <div id="appScreen" class="hidden min-h-screen pb-32 fade-in">
+    <div id="appScreen" class="hidden min-h-screen pb-24 fade-in">
         
         <!-- Header -->
-        <header class="sticky top-0 z-40 px-4 sm:px-6 py-4 glass-panel border-b border-white/5">
-            <div class="max-w-5xl mx-auto flex justify-between items-center">
-                <div>
-                    <p class="text-xs font-bold text-blue-400 uppercase tracking-wide mb-0.5" id="headerDateSub">TODAY</p>
-                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white" id="headerDateMain">Loading...</h1>
-                </div>
+        <header class="sticky top-0 z-40 px-6 py-4 glass-panel border-b border-white/5 backdrop-blur-xl">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <div id="weatherWidget" class="hidden sm:flex flex-col items-end opacity-0 transition-opacity duration-500">
-                        <div class="flex items-center gap-2">
-                            <i id="weatherIcon" class="fa-solid fa-cloud text-gray-300"></i>
-                            <span id="weatherTemp" class="text-lg font-bold">--°</span>
-                        </div>
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform" id="userAvatar" onclick="handleLogout()">U</div>
+                    <div>
+                        <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome Back</p>
+                        <h1 class="text-lg font-bold text-white leading-none" id="userNameDisplay">User</h1>
                     </div>
-                    <div class="relative group cursor-pointer" onclick="handleLogout()">
-                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border border-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg" id="userAvatar">
-                            U
-                        </div>
-                        <div class="absolute right-0 top-12 bg-red-600 text-white text-xs px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Log Out</div>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <h2 class="hidden sm:block text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400" id="headerDateMain">Loading...</h2>
+                    <div id="weatherWidget" class="hidden sm:flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-md opacity-0 transition-opacity duration-500">
+                        <i id="weatherIcon" class="fa-solid fa-cloud text-indigo-300 text-sm"></i>
+                        <span id="weatherTemp" class="text-sm font-bold text-white">--°</span>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
-            <!-- Welcome -->
-            <div class="px-1 flex justify-between items-end">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">Hello, <span id="userNameDisplay" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">User</span></h2>
-                    <p class="text-gray-400 text-sm">Here is your progress for <span id="currentMonthLabel" class="text-white font-medium">this month</span>.</p>
-                </div>
-            </div>
-
-            <!-- Top Row: Calendar & Note -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Row 1: Calendar & Stats & Journal -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                <!-- Main Date Selector -->
-                <div class="glass-panel rounded-3xl p-6 relative">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-white" id="calendarMonthYear">Month</h2>
+                <!-- Calendar (Left) -->
+                <div class="lg:col-span-4 glass-panel rounded-3xl p-6 relative flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold text-white" id="calendarMonthYear">Month</h2>
                         <div class="flex gap-2">
-                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/5"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/5"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-7 gap-1 mb-2 text-center">
-                        <span class="text-xs text-gray-500 font-medium">S</span>
-                        <span class="text-xs text-gray-500 font-medium">M</span>
-                        <span class="text-xs text-gray-500 font-medium">T</span>
-                        <span class="text-xs text-gray-500 font-medium">W</span>
-                        <span class="text-xs text-gray-500 font-medium">T</span>
-                        <span class="text-xs text-gray-500 font-medium">F</span>
-                        <span class="text-xs text-gray-500 font-medium">S</span>
+                    <div class="grid grid-cols-7 gap-2 mb-2 text-center">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase">S</span><span class="text-[10px] text-gray-500 font-bold uppercase">M</span><span class="text-[10px] text-gray-500 font-bold uppercase">T</span><span class="text-[10px] text-gray-500 font-bold uppercase">W</span><span class="text-[10px] text-gray-500 font-bold uppercase">T</span><span class="text-[10px] text-gray-500 font-bold uppercase">F</span><span class="text-[10px] text-gray-500 font-bold uppercase">S</span>
                     </div>
-                    <div class="grid grid-cols-7 gap-1 text-center" id="calendarGrid">
-                        <!-- JS Generated -->
-                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center flex-1 content-start" id="calendarGrid"></div>
                 </div>
 
-                <!-- Daily Journal -->
-                <div class="glass-panel rounded-3xl p-6 flex flex-col relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                        <i class="fa-solid fa-book-open text-6xl text-white"></i>
+                <!-- Main Graph (Center/Right - ENLARGED) -->
+                <div class="lg:col-span-8 glass-panel rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4 z-10 relative">
+                        <div>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-area text-pink-500"></i> Consistency Flow</h2>
+                            <p class="text-xs text-gray-400">Your performance curve for this month</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 uppercase">Success Rate</p>
+                                <p class="text-xl font-bold text-indigo-400" id="globalProgress">0%</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 uppercase">Top Streak</p>
+                                <p class="text-xl font-bold text-pink-400" id="bestStreak">0</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-pen-fancy text-yellow-500"></i> 
-                            Daily Journal
-                        </h2>
-                        <p class="text-xs text-gray-400 mt-1" id="noteDateDisplay">Select a date</p>
-                    </div>
-                    <textarea id="dailyNoteInput" class="flex-1 bg-black/20 border border-white/5 rounded-xl p-4 text-sm text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-gray-600 mb-3" placeholder="Write about your day..."></textarea>
-                    <button onclick="saveNote()" id="saveNoteBtn" class="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-lg transition-all border border-white/5">
-                        Save Entry
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Graph -->
-                <div class="md:col-span-2 glass-panel rounded-3xl p-5 shadow-xl relative">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-semibold text-gray-300">Monthly Trend</h2>
-                        <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">ALL HABITS</span>
-                    </div>
-                    <div class="h-40 w-full relative">
+                    <!-- Large Graph Container -->
+                    <div class="relative w-full h-64 sm:h-72 z-10">
                         <canvas id="progressChart"></canvas>
                     </div>
-                </div>
-                
-                <!-- Quick Stats -->
-                <div class="glass-panel rounded-3xl p-5 flex flex-col justify-center space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-400">Monthly Avg</span>
-                        <span class="text-xl font-bold text-blue-400" id="globalProgress">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-800 rounded-full h-1.5">
-                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: 0%" id="globalProgressBar"></div>
-                    </div>
-                    <div class="pt-4 flex items-center justify-between border-t border-white/5 mt-2">
-                        <span class="text-xs text-gray-400">Longest Streak</span>
-                        <div class="flex items-center gap-1 text-orange-400">
-                            <i class="fa-solid fa-fire text-sm"></i>
-                            <span class="text-xl font-bold" id="bestStreak">0</span>
-                        </div>
-                    </div>
+                    <!-- Decorative background element -->
+                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
                 </div>
             </div>
 
-            <!-- Monthly Habit Grids -->
-            <div>
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
-                    Habits Overview
-                </h3>
+            <!-- Row 2: Journal & Habits -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <div id="habitList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Habits Injected Here -->
-                </div>
-                
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden py-12 text-center opacity-50">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa-solid fa-list-check text-2xl text-gray-400"></i>
+                <!-- Journal (Side) -->
+                <div class="glass-panel rounded-3xl p-6 flex flex-col relative group h-full">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-feather-pointed text-yellow-400"></i> 
+                            Daily Note
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1" id="noteDateDisplay">Today</p>
                     </div>
-                    <p class="text-sm text-gray-400">No habits tracked this month.</p>
+                    <textarea id="dailyNoteInput" class="flex-1 w-full border border-white/5 rounded-xl p-4 text-sm text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-gray-600 mb-4 min-h-[120px]" placeholder="Capture the moment..."></textarea>
+                    <button onclick="saveNote()" id="saveNoteBtn" class="w-full bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-3 rounded-xl transition-all border border-white/5 hover:border-white/20">Save Entry</button>
+                </div>
+
+                <!-- Habits Grid (Takes up 2 cols) -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xl font-bold text-white">Habit Tracker</h3>
+                        <div class="flex gap-4 text-xs font-medium text-gray-400 bg-black/20 px-3 py-1.5 rounded-lg border border-white/5">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Done</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-xmark text-red-400"></i> Missed</span>
+                        </div>
+                    </div>
+                    
+                    <div id="habitList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Habits Injected Here -->
+                    </div>
+                    
+                    <div id="emptyState" class="hidden glass-panel rounded-3xl p-12 text-center opacity-60">
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-plus text-2xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Start your journey</h3>
+                        <p class="text-sm text-gray-400 mt-2">Add your first habit to see the magic.</p>
+                    </div>
                 </div>
             </div>
 
         </main>
 
-        <!-- Floating Action Button -->
-        <button onclick="openModal()" class="fixed bottom-8 right-6 w-14 h-14 fab-gradient text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-40 focus:outline-none border border-white/20">
-            <i class="fa-solid fa-plus text-xl"></i>
+        <!-- FAB -->
+        <button onclick="openModal()" class="fixed bottom-8 right-8 w-16 h-16 fab-gradient text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all duration-300 active:scale-95 z-40 focus:outline-none cursor-pointer">
+            <i class="fa-solid fa-plus text-2xl"></i>
         </button>
 
     </div>
 
     <!-- Add Habit Modal -->
-    <div id="addModal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onclick="closeModal()"></div>
-        <div class="absolute bottom-0 inset-x-0 sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md bg-[#1C1C1E] sm:rounded-3xl rounded-t-3xl p-6 shadow-2xl modal-animate border border-white/10">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-white">Create New Habit</h2>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 text-gray-400 hover:bg-white/20 flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
+    <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity" onclick="closeModal()"></div>
+        <div class="glass-panel w-full max-w-md rounded-3xl p-8 relative z-10 modal-animate shadow-2xl border border-white/10">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-white">New Habit</h2>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white flex items-center justify-center transition-all"><i class="fa-solid fa-times"></i></button>
             </div>
             <form onsubmit="addHabit(event)">
-                <div class="space-y-5">
+                <div class="space-y-6">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Name</label>
-                        <input type="text" id="habitName" required placeholder="e.g. Read 10 Pages" class="w-full bg-[#2C2C2E] border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <label class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-wider">Name</label>
+                        <input type="text" id="habitName" required placeholder="e.g. Morning Meditation" class="w-full border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base bg-black/40">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase mb-3 block">Color</label>
+                        <label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Color Theme</label>
                         <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar" id="colorPicker"></div>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase mb-3 block">Icon</label>
-                        <div class="grid grid-cols-6 gap-2" id="iconPicker"></div>
+                        <label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Icon</label>
+                        <div class="grid grid-cols-6 gap-3" id="iconPicker"></div>
                     </div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-white text-black font-bold py-3.5 rounded-xl hover:bg-gray-200 transition-colors">Save Habit</button>
+                <button type="submit" class="mt-8 w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] transition-all">Create Habit</button>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT -->
     <script>
-        // --- CONSTANTS ---
-        const SESSION_KEY = 'lifetracker_session_v2';
-        const DB_KEY = 'lifetracker_db_v2';
-        const DATA_PREFIX = 'lifetracker_data_v2_';
+        // Constants
+        const SESSION_KEY = 'lifetracker_liquid_session';
+        const DB_KEY = 'lifetracker_liquid_db';
+        const DATA_PREFIX = 'lifetracker_liquid_data_';
 
         const COLORS = [
-            { bg: 'bg-red-500', text: 'text-red-400' },
-            { bg: 'bg-orange-500', text: 'text-orange-400' },
-            { bg: 'bg-yellow-500', text: 'text-yellow-400' },
-            { bg: 'bg-green-500', text: 'text-green-400' },
-            { bg: 'bg-cyan-500', text: 'text-cyan-400' },
-            { bg: 'bg-blue-500', text: 'text-blue-400' },
-            { bg: 'bg-purple-500', text: 'text-purple-400' },
-            { bg: 'bg-pink-500', text: 'text-pink-400' },
+            { bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500', shadow: 'shadow-indigo-500/20', gradient: 'from-indigo-500 to-blue-500' },
+            { bg: 'bg-pink-500', text: 'text-pink-400', border: 'border-pink-500', shadow: 'shadow-pink-500/20', gradient: 'from-pink-500 to-rose-500' },
+            { bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500', shadow: 'shadow-cyan-500/20', gradient: 'from-cyan-500 to-teal-500' },
+            { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500', shadow: 'shadow-emerald-500/20', gradient: 'from-emerald-500 to-green-500' },
+            { bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500', shadow: 'shadow-orange-500/20', gradient: 'from-orange-500 to-yellow-500' },
+            { bg: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500', shadow: 'shadow-purple-500/20', gradient: 'from-purple-500 to-violet-500' },
         ];
-        const ICONS = ['fa-book', 'fa-person-running', 'fa-glass-water', 'fa-moon', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-guitar', 'fa-pen-nib', 'fa-brain', 'fa-bicycle', 'fa-money-bill'];
+        const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase'];
 
-        // --- STATE ---
+        // State
         let currentUser = null;
         let userData = { habits: [], notes: {} };
-        
-        // This date controls the ENTIRE view (Calendar, Habits, Chart)
         let viewDate = new Date(); 
         let selectedDateISO = new Date().toISOString().split('T')[0];
         let chartInstance = null;
@@ -343,21 +340,13 @@
         }
 
         function toggleAuthMode(e) {
-            if(e) e.preventDefault();
+            e.preventDefault();
             const login = document.getElementById('loginForm');
             const signup = document.getElementById('signupForm');
-            const isLogin = !login.classList.contains('hidden');
-            
+            login.classList.toggle('hidden');
+            signup.classList.toggle('hidden');
             document.getElementById('loginError').classList.add('hidden');
             document.getElementById('signupError').classList.add('hidden');
-            
-            if(isLogin) {
-                login.classList.add('hidden');
-                signup.classList.remove('hidden');
-            } else {
-                login.classList.remove('hidden');
-                signup.classList.add('hidden');
-            }
         }
 
         function handleSignup(e) {
@@ -366,11 +355,11 @@
             const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const pass = document.getElementById('signupPass').value.trim();
             
-            if(!name || !email || !pass) return showError('signupError', "Fill all fields");
-            if(pass.length < 6) return showError('signupError', "Password too short");
+            if(!name || !email || !pass) return showError('signupError', "All fields required");
+            if(pass.length < 6) return showError('signupError', "Password min 6 chars");
 
             let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            if(users.find(u => u.email === email)) return showError('signupError', "Email taken");
+            if(users.find(u => u.email === email)) return showError('signupError', "Email already exists");
 
             const newUser = { id: 'u_' + Date.now(), name, email, password: pass };
             users.push(newUser);
@@ -387,7 +376,7 @@
             const user = users.find(u => u.email === email && u.password === pass);
             
             if(user) loginUser(user);
-            else showError('loginError', "Invalid credentials");
+            else showError('loginError', "Invalid email or password");
         }
 
         function loginUser(user) {
@@ -425,12 +414,10 @@
             localStorage.setItem(DATA_PREFIX + currentUser.id, JSON.stringify(userData));
         }
 
-        // --- CORE UI UPDATE ---
+        // --- CORE UI ---
         function showApp() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
-            
-            document.getElementById('userAvatar').innerText = currentUser.name[0].toUpperCase();
             document.getElementById('userNameDisplay').innerText = currentUser.name.split(' ')[0];
             
             updateHeaderDate();
@@ -440,18 +427,14 @@
         }
 
         function renderAllViews() {
-            // This function syncs everything to viewDate
             renderCalendarWidget();
             renderHabitsMonthly();
             loadNoteForDate(selectedDateISO);
             updateGlobalStats();
             setTimeout(initChart, 200);
-            
-            // Update Month Label
-            document.getElementById('currentMonthLabel').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
         }
 
-        // --- CALENDAR WIDGET ---
+        // --- CALENDAR ---
         function renderCalendarWidget() {
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
@@ -474,9 +457,9 @@
 
                 grid.innerHTML += `
                     <div onclick="selectDate('${iso}')" 
-                         class="calendar-day h-8 w-8 rounded-full flex items-center justify-center text-xs cursor-pointer relative 
-                         ${isSelected ? 'selected-date' : 'text-gray-300'} 
-                         ${isToday && !isSelected ? 'border border-blue-500 text-blue-400' : ''} 
+                         class="calendar-day h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center text-xs cursor-pointer relative 
+                         ${isSelected ? 'selected-date' : 'text-gray-400 bg-white/5'} 
+                         ${isToday && !isSelected ? 'border border-indigo-500 text-indigo-400' : ''} 
                          ${hasNote ? 'has-note-dot' : ''}">
                         ${d}
                     </div>
@@ -491,11 +474,11 @@
 
         function selectDate(iso) {
             selectedDateISO = iso;
-            renderCalendarWidget(); // Update dots/selection
+            renderCalendarWidget(); 
             loadNoteForDate(iso);
         }
 
-        // --- HABITS (MONTHLY VIEW) ---
+        // --- HABITS (TICK/CROSS/CLEAR) ---
         function renderHabitsMonthly() {
             const list = document.getElementById('habitList');
             list.innerHTML = '';
@@ -509,54 +492,65 @@
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay(); // for spacing
+            const firstDay = new Date(year, month, 1).getDay();
 
             userData.habits.forEach(habit => {
-                const color = COLORS[habit.colorIndex] || COLORS[5];
+                const color = COLORS[habit.colorIndex] || COLORS[0];
                 
-                // Build Mini Month Grid
+                // Build Compact Month Grid
                 let gridHTML = '';
-                // Spacers
                 for(let i=0; i<firstDay; i++) gridHTML += `<div></div>`;
-                // Days
+                
                 for(let d=1; d<=daysInMonth; d++) {
                     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const isDone = habit.history[iso];
+                    const status = habit.history[iso]; 
                     const isFuture = new Date(iso) > new Date();
+                    
+                    let cellClass = 'bg-white/5 hover:bg-white/10 text-gray-600';
+                    let content = `<span class="opacity-0 group-hover:opacity-100 text-[8px]">${d}</span>`;
+
+                    if (status === 'done' || status === true) {
+                        cellClass = `${color.bg} text-white shadow-sm`;
+                        content = `<i class="fa-solid fa-check text-[8px]"></i>`;
+                    } else if (status === 'missed') {
+                        cellClass = `bg-red-500/20 text-red-400 border border-red-500/30`;
+                        content = `<i class="fa-solid fa-xmark text-[8px]"></i>`;
+                    }
+
+                    if (isFuture) {
+                        cellClass = 'opacity-10 cursor-default';
+                        content = '';
+                    }
                     
                     gridHTML += `
                         <div onclick="toggleHabit('${habit.id}', '${iso}')" 
-                             class="h-6 w-6 sm:h-7 sm:w-7 rounded-md flex items-center justify-center text-[10px] cursor-pointer transition-all border border-white/5
-                             ${isDone ? color.bg + ' text-white shadow-sm' : 'bg-white/5 hover:bg-white/10 text-gray-500'}
-                             ${isFuture ? 'opacity-30 cursor-default' : ''}">
-                             ${d}
+                             class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer group ${cellClass}">
+                             ${content}
                         </div>
                     `;
                 }
 
-                // Calculate Streak
-                let streak = calculateStreak(habit);
+                const streak = calculateStreak(habit);
 
                 const card = document.createElement('div');
-                card.className = `glass-panel rounded-2xl p-5 border-t-4 ${color.bg.replace('bg-', 'border-')}`;
+                card.className = `glass-panel rounded-2xl p-5 border-l-4 ${color.border.replace('border-','border-l-')}`;
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${color.text} text-lg border border-white/5">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center text-white text-sm shadow-lg shadow-black/20">
                                 <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-gray-100">${habit.name}</h3>
-                                <div class="text-xs text-gray-500 flex items-center gap-1">
-                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} day streak
+                            <div class="overflow-hidden">
+                                <h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3>
+                                <div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak
                                 </div>
                             </div>
                         </div>
-                        <button onclick="deleteHabit('${habit.id}')" class="text-gray-600 hover:text-red-400 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                     
-                    <div class="grid grid-cols-7 gap-1 text-center">
-                        <span class="text-[9px] text-gray-600">S</span><span class="text-[9px] text-gray-600">M</span><span class="text-[9px] text-gray-600">T</span><span class="text-[9px] text-gray-600">W</span><span class="text-[9px] text-gray-600">T</span><span class="text-[9px] text-gray-600">F</span><span class="text-[9px] text-gray-600">S</span>
+                    <div class="grid grid-cols-7 gap-1 place-items-center">
                         ${gridHTML}
                     </div>
                 `;
@@ -564,29 +558,17 @@
             });
         }
 
-        function calculateStreak(habit) {
-            let streak = 0;
-            let d = new Date();
-            const todayISO = d.toISOString().split('T')[0];
-            
-            if(!habit.history[todayISO]) d.setDate(d.getDate() - 1);
-            
-            while(true) {
-                const iso = d.toISOString().split('T')[0];
-                if(habit.history[iso]) { streak++; d.setDate(d.getDate()-1); }
-                else break;
-            }
-            return streak;
-        }
-
         function toggleHabit(id, iso) {
-            // Prevent future toggles
-            if(new Date(iso) > new Date()) return;
+            if(new Date(iso) > new Date()) return; // Future guard
             
             const h = userData.habits.find(x => x.id === id);
             if(h) {
-                if(h.history[iso]) delete h.history[iso];
-                else h.history[iso] = true;
+                const current = h.history[iso];
+                // Toggle Logic: Empty -> Done -> Missed -> Empty
+                if (current === 'done' || current === true) h.history[iso] = 'missed';
+                else if (current === 'missed') delete h.history[iso];
+                else h.history[iso] = 'done';
+
                 saveData(); 
                 renderHabitsMonthly();
                 updateGlobalStats();
@@ -594,66 +576,75 @@
             }
         }
 
+        function calculateStreak(habit) {
+            let streak = 0;
+            let d = new Date();
+            const todayISO = d.toISOString().split('T')[0];
+            
+            if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) {
+                d.setDate(d.getDate() - 1);
+            }
+            
+            while(true) {
+                const iso = d.toISOString().split('T')[0];
+                const status = habit.history[iso];
+                if(status === 'done' || status === true) { 
+                    streak++; 
+                    d.setDate(d.getDate()-1); 
+                } else break; 
+            }
+            return streak;
+        }
+
         function addHabit(e) {
             e.preventDefault();
             const name = document.getElementById('habitName').value.trim();
             if(name) {
-                let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 5;
-                let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 1;
-
-                userData.habits.push({
-                    id: Date.now().toString(),
-                    name,
-                    colorIndex,
-                    iconIndex,
-                    history: {}
-                });
+                let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 0;
+                let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 0;
+                userData.habits.push({ id: Date.now().toString(), name, colorIndex, iconIndex, history: {} });
                 saveData(); closeModal(); renderAllViews();
                 document.getElementById('habitName').value = '';
             }
         }
 
         function deleteHabit(id) {
-            if(confirm("Delete habit?")) {
+            if(confirm("Delete habit permanently?")) {
                 userData.habits = userData.habits.filter(h => h.id !== id);
                 saveData(); renderAllViews();
             }
         }
 
-        // --- STATS & CHART ---
+        // --- ENLARGED CHART & STATS ---
         function updateGlobalStats() {
             if(userData.habits.length === 0) {
                 document.getElementById('globalProgress').innerText = "0%";
-                document.getElementById('globalProgressBar').style.width = "0%";
+                document.getElementById('bestStreak').innerText = "0";
                 return;
             }
 
-            // Calculate Monthly Average
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let totalPossible = userData.habits.length * daysInMonth;
+            // Count up to today for realistic stats
+            const now = new Date();
+            let daysLimit = new Date(year, month + 1, 0).getDate();
+            if(now.getFullYear() === year && now.getMonth() === month) daysLimit = now.getDate();
+            
+            let totalPossible = userData.habits.length * daysLimit;
             let totalDone = 0;
 
-            // Count checks in THIS month only
             userData.habits.forEach(h => {
-                for(let d=1; d<=daysInMonth; d++) {
+                for(let d=1; d<=daysLimit; d++) {
                     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    if(h.history[iso]) totalDone++;
+                    if(h.history[iso] === 'done' || h.history[iso] === true) totalDone++;
                 }
             });
 
-            // Prevent div by zero for current month if empty (technically covered by length check but good safety)
             const percent = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
             document.getElementById('globalProgress').innerText = `${percent}%`;
-            document.getElementById('globalProgressBar').style.width = `${percent}%`;
 
-            // Max Streak across all habits
             let max = 0;
-            userData.habits.forEach(h => {
-                const s = calculateStreak(h);
-                if(s > max) max = s;
-            });
+            userData.habits.forEach(h => { const s = calculateStreak(h); if(s > max) max = s; });
             document.getElementById('bestStreak').innerText = max;
         }
 
@@ -662,43 +653,40 @@
             if(!ctxCanvas) return;
             const ctx = ctxCanvas.getContext('2d');
             
-            // X Axis: 1 to daysInMonth
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
-
+            // Beautiful Liquid Gradient Fill
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Indigo
+            gradient.addColorStop(0.5, 'rgba(236, 72, 153, 0.2)'); // Pink
+            gradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
 
             if(chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: [], 
                     datasets: [{
                         label: 'Completion',
                         data: [], 
-                        borderColor: '#60a5fa',
+                        borderColor: '#a855f7', // Purple
                         backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointRadius: 0, 
-                        pointHoverRadius: 4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#a855f7',
+                        pointRadius: 3, 
+                        pointHoverRadius: 6,
                         fill: true,
-                        tension: 0.3
+                        tension: 0.4 // Liquid smooth curve
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
                     scales: { 
                         y: { display: false, min: 0, max: 100 }, 
                         x: { display: false } 
-                    },
-                    interaction: { intersect: false, mode: 'index' }
+                    }
                 }
             });
             updateChart();
@@ -710,19 +698,20 @@
             const month = viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const data = [];
+            const labels = [];
 
             for(let d=1; d<=daysInMonth; d++) {
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let count = 0;
                 let total = userData.habits.length || 1;
-                userData.habits.forEach(h => { if(h.history[iso]) count++; });
+                userData.habits.forEach(h => { if(h.history[iso] === 'done' || h.history[iso] === true) count++; });
                 
-                // Don't show drop to 0 for future days
+                labels.push(d);
                 if(new Date(iso) > new Date()) data.push(null);
-                else data.push(userData.habits.length ? Math.round((count / total) * 100) : 0);
+                else data.push(Math.round((count / total) * 100));
             }
 
-            chartInstance.data.labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+            chartInstance.data.labels = labels;
             chartInstance.data.datasets[0].data = data;
             chartInstance.update();
         }
@@ -732,10 +721,8 @@
             const dateParts = iso.split('-');
             const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]);
             const displayDate = localDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
-            
             document.getElementById('noteDateDisplay').innerText = displayDate;
-            const note = userData.notes[iso] || "";
-            document.getElementById('dailyNoteInput').value = note;
+            document.getElementById('dailyNoteInput').value = userData.notes[iso] || "";
         }
 
         function saveNote() {
@@ -743,21 +730,18 @@
             userData.notes[selectedDateISO] = val;
             saveData();
             renderCalendarWidget(); 
-            
             const btn = document.getElementById('saveNoteBtn');
             const originalText = btn.innerText;
-            btn.innerText = "Saved";
-            btn.classList.add('bg-green-500', 'text-white');
-            setTimeout(() => {
+            btn.innerText = "Saved Successfully";
+            btn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            setTimeout(() => { 
                 btn.innerText = originalText;
-                btn.classList.remove('bg-green-500', 'text-white');
-            }, 1000);
+                btn.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            }, 1500);
         }
 
         function updateHeaderDate() {
-            const now = new Date();
-            document.getElementById('headerDateMain').innerText = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            document.getElementById('headerDateSub').innerText = now.toLocaleDateString('en-US', { weekday: 'long' });
+            document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         }
 
         function initWeather() {
@@ -775,15 +759,15 @@
         }
 
         function setupModal() {
-            window.selectedColorIndex = 5;
-            window.selectedIconIndex = 1;
+            window.selectedColorIndex = 0;
+            window.selectedIconIndex = 0;
 
             document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => 
-                `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 flex-shrink-0 transition-transform hover:scale-110" data-idx="${i}"></div>`
+                `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full bg-gradient-to-br ${c.gradient} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`
             ).join('');
             
             document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => 
-                `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg transition-colors" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`
+                `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`
             ).join('');
             setupModalUI();
         }
@@ -792,14 +776,12 @@
             document.querySelectorAll('.color-opt').forEach(el => {
                 const idx = parseInt(el.dataset.idx);
                 el.style.borderColor = idx === window.selectedColorIndex ? 'white' : 'transparent';
+                if(idx === window.selectedColorIndex) el.classList.add('scale-110');
+                else el.classList.remove('scale-110');
             });
             document.querySelectorAll('.icon-opt').forEach(el => {
                 const idx = parseInt(el.dataset.idx);
-                if(idx === window.selectedIconIndex) {
-                    el.className = 'icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg bg-white text-black';
-                } else {
-                    el.className = 'icon-opt cursor-pointer aspect-square rounded-xl flex items-center justify-center text-lg bg-white/10 text-gray-400 hover:bg-white/20';
-                }
+                el.className = `icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border ${idx === window.selectedIconIndex ? 'bg-white text-black border-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`;
             });
         }
 
