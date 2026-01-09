@@ -5,131 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Tracker</title>
     <meta name="theme-color" content="#000000">
+    
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Styles -->
     <style>
-        /* --- LIQUID OS THEME --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #050505;
-            color: #ffffff;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Ambient Background Blobs */
-        .liquid-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-            background: #000;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #050505; color: #fff; overflow-x: hidden; }
         
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
-        }
+        /* Background */
+        .liquid-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: #000; overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s infinite ease-in-out; }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #db2777; animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #0891b2; animation-delay: -10s; opacity: 0.3; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(30px, -50px); } 66% { transform: translate(-20px, 20px); } }
 
-        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; animation-delay: 0s; } /* Indigo */
-        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #db2777; animation-delay: -5s; } /* Pink */
-        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #0891b2; animation-delay: -10s; opacity: 0.3; } /* Cyan */
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
-        }
-
-        /* Glassmorphism Panels */
-        .glass-panel {
-            background: rgba(20, 20, 25, 0.4); 
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* --- UTILITIES --- */
+        /* UI Components */
+        .glass-panel { background: rgba(20, 20, 25, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
         .modal-animate { animation: modalUp 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
         @keyframes modalUp { from { transform: translateY(100%) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-
         .fade-in { animation: fadeIn 0.6s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Calendar Styling */
+        /* Calendar & Interactions */
         .calendar-day { transition: all 0.2s; }
         .calendar-day:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
-        .selected-date { 
-            background: linear-gradient(135deg, #3b82f6, #2563eb) !important; 
-            color: white !important; 
-            font-weight: bold; 
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-        }
-        .has-note-dot::after {
-            content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-            width: 4px; height: 4px; background-color: #fbbf24; border-radius: 50%;
-            box-shadow: 0 0 8px #fbbf24;
-        }
-
-        /* Tick/Cross Interaction */
-        .status-cell { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .status-cell:active { transform: scale(0.8); }
-
-        .fab-gradient {
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-        }
-
-        /* Input Fixes */
+        .selected-date { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; font-weight: bold; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
+        .has-note-dot::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #fbbf24; border-radius: 50%; }
+        .status-cell { transition: all 0.2s; }
+        .status-cell:active { transform: scale(0.9); }
         input, textarea { background: rgba(0,0,0,0.3) !important; color: white !important; }
         input:focus, textarea:focus { background: rgba(0,0,0,0.5) !important; border-color: rgba(255,255,255,0.2) !important; }
-        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #111 inset !important; -webkit-text-fill-color: white !important; }
     </style>
 </head>
 <body class="min-h-screen selection:bg-pink-500 selection:text-white">
 
-    <!-- LIQUID BACKGROUND -->
     <div class="liquid-bg">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
     </div>
 
-    <!-- ================= AUTH SCREEN ================= -->
+    <!-- AUTH SCREEN -->
     <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 shadow-2xl border border-white/10">
-            <div class="text-center mb-10">
+            <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center text-3xl text-white mb-5 shadow-lg shadow-pink-500/20">
                     <i class="fa-solid fa-infinity"></i>
                 </div>
                 <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Life Tracker</h1>
-                <p class="text-gray-400 text-sm mt-2 font-medium">Design your life, day by day.</p>
+                <p class="text-gray-400 text-sm mt-2">Cloud Sync Ready</p>
             </div>
 
-            <!-- Forms -->
+            <!-- Login Form -->
             <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
                 <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
                 <div class="space-y-4">
                     <input type="email" id="loginEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                     <input type="password" id="loginPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                 </div>
-                <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Enter Dashboard</button>
+                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Log In</button>
                 <div class="text-center mt-6">
                     <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Create an account</button>
                 </div>
             </form>
 
+            <!-- Signup Form -->
             <form id="signupForm" class="space-y-4 hidden" onsubmit="handleSignup(event)">
                 <div id="signupError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
                 <div class="space-y-3">
@@ -137,7 +84,7 @@
                     <input type="email" id="signupEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
                     <input type="password" id="signupPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Join Now</button>
+                <button type="submit" id="signupBtn" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Create Account</button>
                 <div class="text-center mt-6">
                     <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Back to Login</button>
                 </div>
@@ -145,36 +92,32 @@
         </div>
     </div>
 
-    <!-- ================= MAIN APP ================= -->
+    <!-- MAIN APP -->
     <div id="appScreen" class="hidden min-h-screen pb-24 fade-in">
-        
-        <!-- Header -->
         <header class="sticky top-0 z-40 px-6 py-4 glass-panel border-b border-white/5 backdrop-blur-xl">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform" id="userAvatar" onclick="handleLogout()">U</div>
+                    <div class="relative group">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform" id="userAvatar">U</div>
+                        <div class="absolute top-12 left-0 w-32 bg-[#1a1a20] border border-white/10 rounded-xl shadow-2xl p-2 hidden group-hover:block z-50">
+                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+                        </div>
+                    </div>
                     <div>
                         <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome Back</p>
                         <h1 class="text-lg font-bold text-white leading-none" id="userNameDisplay">User</h1>
                     </div>
                 </div>
-                
                 <div class="flex items-center gap-6">
+                    <button onclick="openReportModal()" class="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold text-white hover:bg-white/20 hover:scale-105 transition-all"><i class="fa-solid fa-file-pdf"></i> Report</button>
                     <h2 class="hidden sm:block text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400" id="headerDateMain">Loading...</h2>
-                    <div id="weatherWidget" class="hidden sm:flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-md opacity-0 transition-opacity duration-500">
-                        <i id="weatherIcon" class="fa-solid fa-cloud text-indigo-300 text-sm"></i>
-                        <span id="weatherTemp" class="text-sm font-bold text-white">--°</span>
-                    </div>
                 </div>
             </div>
         </header>
 
         <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-
-            <!-- Row 1: Calendar & Stats & Journal -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <!-- Calendar (Left) -->
+                <!-- Calendar -->
                 <div class="lg:col-span-4 glass-panel rounded-3xl p-6 relative flex flex-col">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-lg font-bold text-white" id="calendarMonthYear">Month</h2>
@@ -188,117 +131,263 @@
                     </div>
                     <div class="grid grid-cols-7 gap-2 text-center flex-1 content-start" id="calendarGrid"></div>
                 </div>
-
-                <!-- Main Graph (Center/Right) -->
+                <!-- Graph -->
                 <div class="lg:col-span-8 glass-panel rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-4 z-10 relative">
                         <div>
                             <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-area text-pink-500"></i> Consistency Flow</h2>
-                            <p class="text-xs text-gray-400">Your performance curve for this month</p>
+                            <p class="text-xs text-gray-400">Performance Trend</p>
                         </div>
                         <div class="flex gap-4">
-                            <div class="text-right">
-                                <p class="text-[10px] text-gray-400 uppercase">Success Rate</p>
-                                <p class="text-xl font-bold text-indigo-400" id="globalProgress">0%</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] text-gray-400 uppercase">Top Streak</p>
-                                <p class="text-xl font-bold text-pink-400" id="bestStreak">0</p>
-                            </div>
+                            <div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Success</p><p class="text-xl font-bold text-indigo-400" id="globalProgress">0%</p></div>
+                            <div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Streak</p><p class="text-xl font-bold text-pink-400" id="bestStreak">0</p></div>
                         </div>
                     </div>
-                    <!-- Large Graph Container -->
-                    <div class="relative w-full h-64 sm:h-72 z-10">
-                        <canvas id="progressChart"></canvas>
-                    </div>
-                    <!-- Decorative background element -->
+                    <div class="relative w-full h-64 sm:h-72 z-10"><canvas id="progressChart"></canvas></div>
                     <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
                 </div>
             </div>
 
-            <!-- Row 2: Journal & Habits -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Journal (Side) -->
+                <!-- Journal -->
                 <div class="glass-panel rounded-3xl p-6 flex flex-col relative group h-full">
                     <div class="mb-4">
-                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-feather-pointed text-yellow-400"></i> 
-                            Daily Note
-                        </h2>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-feather-pointed text-yellow-400"></i> Daily Note</h2>
                         <p class="text-xs text-gray-400 mt-1" id="noteDateDisplay">Today</p>
                     </div>
                     <textarea id="dailyNoteInput" class="flex-1 w-full border border-white/5 rounded-xl p-4 text-sm text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-gray-600 mb-4 min-h-[120px]" placeholder="Capture the moment..."></textarea>
                     <button onclick="saveNote()" id="saveNoteBtn" class="w-full bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-3 rounded-xl transition-all border border-white/5 hover:border-white/20">Save Entry</button>
                 </div>
-
-                <!-- Habits Grid (Takes up 2 cols) -->
+                <!-- Habits -->
                 <div class="lg:col-span-2 space-y-4">
                     <div class="flex items-center justify-between px-2">
                         <h3 class="text-xl font-bold text-white">Habit Tracker</h3>
-                        <div class="flex gap-4 text-xs font-medium text-gray-400 bg-black/20 px-3 py-1.5 rounded-lg border border-white/5">
+                        <button onclick="openReportModal()" class="sm:hidden flex items-center gap-2 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-[10px] font-bold text-white"><i class="fa-solid fa-file-pdf"></i> Report</button>
+                        <div class="hidden sm:flex gap-4 text-xs font-medium text-gray-400 bg-black/20 px-3 py-1.5 rounded-lg border border-white/5">
                             <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Done</span>
                             <span class="flex items-center gap-1.5"><i class="fa-solid fa-xmark text-red-400"></i> Missed</span>
                         </div>
                     </div>
-                    
-                    <div id="habitList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Habits Injected Here -->
-                    </div>
-                    
+                    <div id="habitList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div id="emptyState" class="hidden glass-panel rounded-3xl p-12 text-center opacity-60">
-                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fa-solid fa-plus text-2xl text-gray-400"></i>
-                        </div>
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-plus text-2xl text-gray-400"></i></div>
                         <h3 class="text-lg font-bold text-white">Start your journey</h3>
                         <p class="text-sm text-gray-400 mt-2">Add your first habit to see the magic.</p>
                     </div>
                 </div>
             </div>
-
         </main>
 
-        <!-- FAB -->
-        <button onclick="openModal()" class="fixed bottom-8 right-8 w-16 h-16 fab-gradient text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all duration-300 active:scale-95 z-40 focus:outline-none cursor-pointer">
-            <i class="fa-solid fa-plus text-2xl"></i>
-        </button>
-
+        <button onclick="openModal()" class="fixed bottom-8 right-8 w-16 h-16 fab-gradient text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all duration-300 active:scale-95 z-40 focus:outline-none cursor-pointer"><i class="fa-solid fa-plus text-2xl"></i></button>
     </div>
 
-    <!-- Add Habit Modal -->
+    <!-- MODALS -->
+    <!-- Report -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity" onclick="closeReportModal()"></div>
+        <div class="relative z-10 w-full max-w-2xl h-[90vh] flex flex-col">
+            <div class="flex justify-end gap-3 mb-4">
+                <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-lg shadow-indigo-500/30 flex items-center gap-2"><i class="fa-solid fa-download"></i> PDF</button>
+                <button onclick="closeReportModal()" class="bg-white/10 hover:bg-white/20 text-white w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto rounded-3xl no-scrollbar">
+                <div id="reportContent" class="bg-[#111] p-8 sm:p-12 text-white shadow-2xl min-h-full border border-white/5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Habit -->
     <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity" onclick="closeModal()"></div>
         <div class="glass-panel w-full max-w-md rounded-3xl p-8 relative z-10 modal-animate shadow-2xl border border-white/10">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-2xl font-bold text-white">New Habit</h2>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white flex items-center justify-center transition-all"><i class="fa-solid fa-times"></i></button>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 text-gray-400 hover:bg-white/20 hover:text-white flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
             </div>
             <form onsubmit="addHabit(event)">
                 <div class="space-y-6">
-                    <div>
-                        <label class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-wider">Name</label>
-                        <input type="text" id="habitName" required placeholder="e.g. Morning Meditation" class="w-full border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base bg-black/40">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Color Theme</label>
-                        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar" id="colorPicker"></div>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Icon</label>
-                        <div class="grid grid-cols-6 gap-3" id="iconPicker"></div>
-                    </div>
+                    <div><label class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-wider">Name</label><input type="text" id="habitName" required class="w-full border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base bg-black/40"></div>
+                    <div><label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Color</label><div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar" id="colorPicker"></div></div>
+                    <div><label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Icon</label><div class="grid grid-cols-6 gap-3" id="iconPicker"></div></div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] transition-all">Create Habit</button>
+                <button type="submit" class="mt-8 w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] transition-all">Create</button>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
-    <script>
-        // Constants
-        const SESSION_KEY = 'lifetracker_liquid_session';
-        const DB_KEY = 'lifetracker_liquid_db';
-        const DATA_PREFIX = 'lifetracker_liquid_data_';
+    <!-- SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'life-tracker-default';
+
+        // Globals
+        window.userProfile = null; // { name, email }
+        window.userData = { habits: [], notes: {} };
+        window.viewDate = new Date();
+        window.selectedDateISO = new Date().toISOString().split('T')[0];
+        window.chartInstance = null;
+        let unsubscribe = null;
+
+        // --- AUTH & DATA LOGIC (Universal Cloud System) ---
+        // We use Anonymous Auth to connect to DB, then manage user profiles manually in a public collection
+        // This bypasses specific Auth Provider restrictions while ensuring cross-device sync via email/pass.
+
+        // Initialize connection
+        signInAnonymously(auth).catch(console.error);
+
+        // Utilities
+        const hash = async (str) => {
+            const msgBuffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+
+        const getUserDocRef = async (email) => {
+            const emailId = btoa(email.toLowerCase().trim());
+            return doc(db, 'artifacts', appId, 'public', 'data', 'user_profiles', emailId);
+        };
+
+        // Handlers
+        window.handleSignup = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pass = document.getElementById('signupPass').value.trim();
+            const btn = document.getElementById('signupBtn');
+            const errorEl = document.getElementById('signupError');
+
+            if(!name || !email || !pass) return showAuthError(errorEl, "All fields required");
+            if(pass.length < 6) return showAuthError(errorEl, "Password min 6 chars");
+
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating...`;
+
+            try {
+                const docRef = await getUserDocRef(email);
+                const docSnap = await getDoc(docRef);
+                
+                if(docSnap.exists()) throw new Error("Email already registered");
+
+                const passwordHash = await hash(pass);
+                const newProfile = {
+                    name: name,
+                    email: email,
+                    password: passwordHash,
+                    habits: [],
+                    notes: {}
+                };
+
+                await setDoc(docRef, newProfile);
+                loginSuccess(newProfile);
+            } catch (err) {
+                showAuthError(errorEl, err.message);
+                btn.innerHTML = "Create Account";
+            }
+        };
+
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const btn = document.getElementById('loginBtn');
+            const errorEl = document.getElementById('loginError');
+
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Logging in...`;
+
+            try {
+                const docRef = await getUserDocRef(email);
+                const docSnap = await getDoc(docRef);
+
+                if(!docSnap.exists()) throw new Error("Account not found");
+
+                const data = docSnap.data();
+                const inputHash = await hash(pass);
+
+                if(data.password !== inputHash) throw new Error("Incorrect password");
+
+                loginSuccess(data);
+            } catch(err) {
+                showAuthError(errorEl, err.message);
+                btn.innerHTML = "Log In";
+            }
+        };
+
+        function loginSuccess(profile) {
+            window.userProfile = profile;
+            // Save minimal session to local storage to persist refresh
+            localStorage.setItem('lifetracker_user_email', profile.email);
+            
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('userNameDisplay').innerText = profile.name.split(' ')[0];
+            document.getElementById('userAvatar').innerText = profile.name[0].toUpperCase();
+
+            // Start Sync
+            startDataSync(profile.email);
+            
+            // Init UI
+            updateHeaderDate();
+            setupModal();
+        }
+
+        async function startDataSync(email) {
+            const docRef = await getUserDocRef(email);
+            unsubscribe = onSnapshot(docRef, (doc) => {
+                if(doc.exists()) {
+                    const data = doc.data();
+                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
+                    renderAllViews();
+                }
+            });
+        }
+
+        window.saveData = async () => {
+            if(!window.userProfile) return;
+            const docRef = await getUserDocRef(window.userProfile.email);
+            // Merge update
+            const updatePayload = {
+                habits: window.userData.habits,
+                notes: window.userData.notes
+            };
+            await setDoc(docRef, updatePayload, { merge: true });
+        };
+
+        window.handleLogout = () => {
+            if(confirm("Log out?")) {
+                if(unsubscribe) unsubscribe();
+                localStorage.removeItem('lifetracker_user_email');
+                window.location.reload();
+            }
+        };
+
+        // Auto Login Check
+        const savedEmail = localStorage.getItem('lifetracker_user_email');
+        if(savedEmail) {
+            // Re-fetch profile to ensure validity
+            getUserDocRef(savedEmail).then(getDoc).then(doc => {
+                if(doc.exists()) loginSuccess(doc.data());
+                else localStorage.removeItem('lifetracker_user_email');
+            });
+        }
+
+        function showAuthError(el, msg) { el.innerText = msg; el.classList.remove('hidden'); }
+        window.toggleAuthMode = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.toggle('hidden'); document.getElementById('signupForm').classList.toggle('hidden'); document.getElementById('loginError').classList.add('hidden'); document.getElementById('signupError').classList.add('hidden'); };
+
+        // --- RENDER FUNCTIONS ---
+        window.renderAllViews = () => {
+            renderCalendarWidget();
+            renderHabitsMonthly();
+            loadNoteForDate(window.selectedDateISO);
+            updateGlobalStats();
+            setTimeout(initChart, 200);
+        };
 
         const COLORS = [
             { bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500', shadow: 'shadow-indigo-500/20', gradient: 'from-indigo-500 to-blue-500' },
@@ -306,497 +395,224 @@
             { bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500', shadow: 'shadow-cyan-500/20', gradient: 'from-cyan-500 to-teal-500' },
             { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500', shadow: 'shadow-emerald-500/20', gradient: 'from-emerald-500 to-green-500' },
             { bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500', shadow: 'shadow-orange-500/20', gradient: 'from-orange-500 to-yellow-500' },
-            { bg: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500', shadow: 'shadow-purple-500/20', gradient: 'from-purple-500 to-violet-500' },
         ];
         const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase'];
 
-        // State
-        let currentUser = null;
-        let userData = { habits: [], notes: {} };
-        let viewDate = new Date(); 
-        let selectedDateISO = new Date().toISOString().split('T')[0];
-        let chartInstance = null;
-
-        // --- AUTH ---
-        function initApp() {
-            const stored = localStorage.getItem(SESSION_KEY);
-            if (stored) {
-                try {
-                    currentUser = JSON.parse(stored);
-                    loadUserData();
-                    showApp();
-                } catch(e) {
-                    localStorage.removeItem(SESSION_KEY);
-                    showAuth();
-                }
-            } else {
-                showAuth();
-            }
-        }
-
-        function showAuth() {
-            document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('appScreen').classList.add('hidden');
-        }
-
-        function toggleAuthMode(e) {
-            e.preventDefault();
-            const login = document.getElementById('loginForm');
-            const signup = document.getElementById('signupForm');
-            login.classList.toggle('hidden');
-            signup.classList.toggle('hidden');
-            document.getElementById('loginError').classList.add('hidden');
-            document.getElementById('signupError').classList.add('hidden');
-        }
-
-        function handleSignup(e) {
-            e.preventDefault();
-            const name = document.getElementById('signupName').value.trim();
-            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('signupPass').value.trim();
-            
-            if(!name || !email || !pass) return showError('signupError', "All fields required");
-            if(pass.length < 6) return showError('signupError', "Password min 6 chars");
-
-            let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            if(users.find(u => u.email === email)) return showError('signupError', "Email already exists");
-
-            const newUser = { id: 'u_' + Date.now(), name, email, password: pass };
-            users.push(newUser);
-            localStorage.setItem(DB_KEY, JSON.stringify(users));
-            loginUser(newUser);
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('loginPass').value.trim();
-            
-            let users = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            const user = users.find(u => u.email === email && u.password === pass);
-            
-            if(user) loginUser(user);
-            else showError('loginError', "Invalid email or password");
-        }
-
-        function loginUser(user) {
-            currentUser = user;
-            localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-            document.getElementById('loginForm').reset();
-            document.getElementById('signupForm').reset();
-            loadUserData();
-            showApp();
-        }
-
-        function handleLogout() {
-            if(confirm("Log out?")) {
-                localStorage.removeItem(SESSION_KEY);
-                currentUser = null;
-                initApp();
-            }
-        }
-
-        function showError(id, msg) {
-            const el = document.getElementById(id);
-            el.innerText = msg;
-            el.classList.remove('hidden');
-        }
-
-        // --- DATA ---
-        function loadUserData() {
-            if(!currentUser) return;
-            const raw = localStorage.getItem(DATA_PREFIX + currentUser.id);
-            userData = raw ? JSON.parse(raw) : { habits: [], notes: {} };
-        }
-
-        function saveData() {
-            if(!currentUser) return;
-            localStorage.setItem(DATA_PREFIX + currentUser.id, JSON.stringify(userData));
-        }
-
-        // --- CORE UI ---
-        function showApp() {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            document.getElementById('userNameDisplay').innerText = currentUser.name.split(' ')[0];
-            
-            updateHeaderDate();
-            renderAllViews();
-            initWeather();
-            setupModal();
-        }
-
-        function renderAllViews() {
-            renderCalendarWidget();
-            renderHabitsMonthly();
-            loadNoteForDate(selectedDateISO);
-            updateGlobalStats();
-            setTimeout(initChart, 200);
-        }
-
-        // --- CALENDAR ---
-        function renderCalendarWidget() {
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            document.getElementById('calendarMonthYear').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-
+        window.renderCalendarWidget = () => {
+            const year = window.viewDate.getFullYear();
+            const month = window.viewDate.getMonth();
+            document.getElementById('calendarMonthYear').innerText = window.viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-
             for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
-
             const todayISO = new Date().toISOString().split('T')[0];
-
             for(let d=1; d<=daysInMonth; d++) {
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const isSelected = iso === selectedDateISO;
+                const isSelected = iso === window.selectedDateISO;
                 const isToday = iso === todayISO;
-                const hasNote = userData.notes[iso] && userData.notes[iso].trim() !== "";
-
-                grid.innerHTML += `
-                    <div onclick="selectDate('${iso}')" 
-                         class="calendar-day h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center text-xs cursor-pointer relative 
-                         ${isSelected ? 'selected-date' : 'text-gray-400 bg-white/5'} 
-                         ${isToday && !isSelected ? 'border border-indigo-500 text-indigo-400' : ''} 
-                         ${hasNote ? 'has-note-dot' : ''}">
-                        ${d}
-                    </div>
-                `;
+                const hasNote = window.userData.notes && window.userData.notes[iso] && window.userData.notes[iso].trim() !== "";
+                grid.innerHTML += `<div onclick="selectDate('${iso}')" class="calendar-day h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center text-xs cursor-pointer relative ${isSelected ? 'selected-date' : 'text-gray-400 bg-white/5'} ${isToday && !isSelected ? 'border border-indigo-500 text-indigo-400' : ''} ${hasNote ? 'has-note-dot' : ''}">${d}</div>`;
             }
-        }
+        };
 
-        function changeMonth(dir) {
-            viewDate.setMonth(viewDate.getMonth() + dir);
-            renderAllViews();
-        }
+        window.changeMonth = (dir) => { window.viewDate.setMonth(window.viewDate.getMonth() + dir); renderAllViews(); };
+        window.selectDate = (iso) => { window.selectedDateISO = iso; renderCalendarWidget(); loadNoteForDate(iso); };
 
-        function selectDate(iso) {
-            selectedDateISO = iso;
-            renderCalendarWidget(); 
-            loadNoteForDate(iso);
-        }
-
-        // --- HABITS (TICK/CROSS/CLEAR) ---
-        function renderHabitsMonthly() {
+        window.renderHabitsMonthly = () => {
             const list = document.getElementById('habitList');
             list.innerHTML = '';
-
-            if(userData.habits.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-                return;
-            }
+            if(window.userData.habits.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); return; }
             document.getElementById('emptyState').classList.add('hidden');
-
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
+            const year = window.viewDate.getFullYear();
+            const month = window.viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDay = new Date(year, month, 1).getDay();
-
-            userData.habits.forEach(habit => {
+            
+            window.userData.habits.forEach(habit => {
                 const color = COLORS[habit.colorIndex] || COLORS[0];
-                
-                // Build Compact Month Grid
                 let gridHTML = '';
-
-                // Headers
-                const days = ['S','M','T','W','T','F','S'];
-                days.forEach(day => {
-                   gridHTML += `<div class="text-[8px] text-gray-500 font-bold mb-1">${day}</div>`;
-                });
-
+                ['S','M','T','W','T','F','S'].forEach(d => gridHTML += `<div class="text-[8px] text-gray-500 font-bold mb-1">${d}</div>`);
                 for(let i=0; i<firstDay; i++) gridHTML += `<div></div>`;
-                
                 for(let d=1; d<=daysInMonth; d++) {
                     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const status = habit.history[iso]; 
-                    const isFuture = new Date(iso) > new Date();
-                    
+                    const status = habit.history[iso];
                     let cellClass = 'bg-white/5 hover:bg-white/10 text-gray-600';
-                    let content = `<span class="text-[9px] font-medium opacity-70">${d}</span>`;
-
-                    if (status === 'done' || status === true) {
-                        cellClass = `${color.bg} text-white shadow-sm`;
-                        content = `<i class="fa-solid fa-check text-[10px]"></i>`;
-                    } else if (status === 'missed') {
-                        cellClass = `bg-red-500/20 text-red-400 border border-red-500/30`;
-                        content = `<i class="fa-solid fa-xmark text-[10px]"></i>`;
-                    }
-
-                    if (isFuture) {
-                        cellClass = 'opacity-10 cursor-default';
-                        content = `<span class="text-[9px]">${d}</span>`;
-                    }
-                    
-                    gridHTML += `
-                        <div onclick="toggleHabit('${habit.id}', '${iso}')" 
-                             class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer group ${cellClass}">
-                             ${content}
-                        </div>
-                    `;
+                    let content = `<span class="text-[9px] opacity-70">${d}</span>`;
+                    if (status === 'done' || status === true) { cellClass = `${color.bg} text-white shadow-sm`; content = `<i class="fa-solid fa-check text-[10px]"></i>`; }
+                    else if (status === 'missed') { cellClass = `bg-red-500/20 text-red-400 border border-red-500/30`; content = `<i class="fa-solid fa-xmark text-[10px]"></i>`; }
+                    gridHTML += `<div onclick="toggleHabit('${habit.id}', '${iso}')" class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer group ${cellClass}">${content}</div>`;
                 }
-
                 const streak = calculateStreak(habit);
-
                 const card = document.createElement('div');
                 card.className = `glass-panel rounded-2xl p-5 border-l-4 ${color.border.replace('border-','border-l-')}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center text-white text-sm shadow-lg shadow-black/20">
-                                <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
-                            </div>
-                            <div class="overflow-hidden">
-                                <h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3>
-                                <div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
-                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak
-                                </div>
-                            </div>
-                        </div>
-                        <button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                    
-                    <div class="grid grid-cols-7 gap-1 place-items-center">
-                        ${gridHTML}
-                    </div>
-                `;
+                card.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center text-white text-sm shadow-lg shadow-black/20"><i class="fa-solid ${ICONS[habit.iconIndex]}"></i></div><div class="overflow-hidden"><h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3><div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5"><i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak</div></div></div><button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button></div><div class="grid grid-cols-7 gap-1 place-items-center">${gridHTML}</div>`;
                 list.appendChild(card);
             });
-        }
+        };
 
-        function toggleHabit(id, iso) {
-            if(new Date(iso) > new Date()) return; // Future guard
-            
-            const h = userData.habits.find(x => x.id === id);
+        window.toggleHabit = (id, iso) => {
+            if(new Date(iso) > new Date()) return;
+            const h = window.userData.habits.find(x => x.id === id);
             if(h) {
                 const current = h.history[iso];
-                // Toggle Logic: Empty -> Done -> Missed -> Empty
                 if (current === 'done' || current === true) h.history[iso] = 'missed';
                 else if (current === 'missed') delete h.history[iso];
                 else h.history[iso] = 'done';
-
-                saveData(); 
-                renderHabitsMonthly();
-                updateGlobalStats();
-                updateChart();
+                window.saveData(); 
             }
-        }
+        };
 
-        function calculateStreak(habit) {
-            let streak = 0;
-            let d = new Date();
-            const todayISO = d.toISOString().split('T')[0];
-            
-            if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) {
-                d.setDate(d.getDate() - 1);
-            }
-            
-            while(true) {
-                const iso = d.toISOString().split('T')[0];
-                const status = habit.history[iso];
-                if(status === 'done' || status === true) { 
-                    streak++; 
-                    d.setDate(d.getDate()-1); 
-                } else break; 
-            }
-            return streak;
-        }
-
-        function addHabit(e) {
+        window.addHabit = (e) => {
             e.preventDefault();
             const name = document.getElementById('habitName').value.trim();
             if(name) {
                 let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 0;
                 let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 0;
-                userData.habits.push({ id: Date.now().toString(), name, colorIndex, iconIndex, history: {} });
-                saveData(); closeModal(); renderAllViews();
+                window.userData.habits.push({ id: Date.now().toString(), name, colorIndex, iconIndex, history: {} });
+                window.saveData(); 
+                closeModal(); 
                 document.getElementById('habitName').value = '';
             }
-        }
+        };
 
-        function deleteHabit(id) {
+        window.deleteHabit = (id) => {
             if(confirm("Delete habit permanently?")) {
-                userData.habits = userData.habits.filter(h => h.id !== id);
-                saveData(); renderAllViews();
+                window.userData.habits = window.userData.habits.filter(h => h.id !== id);
+                window.saveData();
             }
-        }
+        };
 
-        // --- ENLARGED CHART & STATS ---
-        function updateGlobalStats() {
-            if(userData.habits.length === 0) {
-                document.getElementById('globalProgress').innerText = "0%";
-                document.getElementById('bestStreak').innerText = "0";
-                return;
-            }
+        window.saveNote = () => {
+            const val = document.getElementById('dailyNoteInput').value;
+            if(!window.userData.notes) window.userData.notes = {};
+            window.userData.notes[window.selectedDateISO] = val;
+            window.saveData();
+            const btn = document.getElementById('saveNoteBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Saved";
+            setTimeout(() => { btn.innerText = originalText; }, 1000);
+        };
 
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            // Count up to today for realistic stats
+        window.updateGlobalStats = () => {
+            if(window.userData.habits.length === 0) { document.getElementById('globalProgress').innerText = "0%"; document.getElementById('bestStreak').innerText = "0"; return; }
+            const year = window.viewDate.getFullYear();
+            const month = window.viewDate.getMonth();
             const now = new Date();
             let daysLimit = new Date(year, month + 1, 0).getDate();
             if(now.getFullYear() === year && now.getMonth() === month) daysLimit = now.getDate();
-            
-            let totalPossible = userData.habits.length * daysLimit;
+            let totalPossible = window.userData.habits.length * daysLimit;
             let totalDone = 0;
-
-            userData.habits.forEach(h => {
+            window.userData.habits.forEach(h => {
                 for(let d=1; d<=daysLimit; d++) {
                     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     if(h.history[iso] === 'done' || h.history[iso] === true) totalDone++;
                 }
             });
-
             const percent = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
             document.getElementById('globalProgress').innerText = `${percent}%`;
-
             let max = 0;
-            userData.habits.forEach(h => { const s = calculateStreak(h); if(s > max) max = s; });
+            window.userData.habits.forEach(h => { const s = calculateStreak(h); if(s > max) max = s; });
             document.getElementById('bestStreak').innerText = max;
-        }
+        };
 
-        function initChart() {
+        window.initChart = () => {
             const ctxCanvas = document.getElementById('progressChart');
             if(!ctxCanvas) return;
             const ctx = ctxCanvas.getContext('2d');
-            
-            // Beautiful Liquid Gradient Fill
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Indigo
-            gradient.addColorStop(0.5, 'rgba(236, 72, 153, 0.2)'); // Pink
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); 
+            gradient.addColorStop(0.5, 'rgba(236, 72, 153, 0.2)');
             gradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
-
-            if(chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
+            if(window.chartInstance) window.chartInstance.destroy();
+            window.chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: [], 
-                    datasets: [{
-                        label: 'Completion',
-                        data: [], 
-                        borderColor: '#a855f7', // Purple
-                        backgroundColor: gradient,
-                        borderWidth: 3,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#a855f7',
-                        pointRadius: 3, 
-                        pointHoverRadius: 6,
-                        fill: true,
-                        tension: 0.4 // Liquid smooth curve
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-                    scales: { 
-                        y: { display: false, min: 0, max: 100 }, 
-                        x: { display: false } 
-                    }
-                }
+                data: { labels: [], datasets: [{ label: 'Completion', data: [], borderColor: '#a855f7', backgroundColor: gradient, borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#a855f7', pointRadius: 3, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, min: 0, max: 100 }, x: { display: false } } }
             });
             updateChart();
-        }
+        };
 
         function updateChart() {
-            if(!chartInstance) return;
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
+            if(!window.chartInstance) return;
+            const year = window.viewDate.getFullYear();
+            const month = window.viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const data = [];
-            const labels = [];
-
+            const data = []; const labels = [];
             for(let d=1; d<=daysInMonth; d++) {
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                let count = 0;
-                let total = userData.habits.length || 1;
-                userData.habits.forEach(h => { if(h.history[iso] === 'done' || h.history[iso] === true) count++; });
-                
+                let count = 0; let total = window.userData.habits.length || 1;
+                window.userData.habits.forEach(h => { if(h.history[iso] === 'done' || h.history[iso] === true) count++; });
                 labels.push(d);
                 if(new Date(iso) > new Date()) data.push(null);
                 else data.push(Math.round((count / total) * 100));
             }
-
-            chartInstance.data.labels = labels;
-            chartInstance.data.datasets[0].data = data;
-            chartInstance.update();
+            window.chartInstance.data.labels = labels;
+            window.chartInstance.data.datasets[0].data = data;
+            window.chartInstance.update();
         }
 
-        // --- MISC ---
+        window.openReportModal = () => {
+            if(window.userData.habits.length === 0) return alert("Add habits first!");
+            const today = new Date();
+            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
+            let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
+            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> Keep consistent! You are doing great.</p></div>`;
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        window.downloadPDF = async () => {
+            const btn = document.querySelector('button[onclick="downloadPDF()"]');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+            try {
+                const element = document.getElementById('reportContent');
+                const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#111111' });
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('LifeTracker_Report.pdf');
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Saved!`;
+                setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-download"></i> PDF`, 2000);
+            } catch(e) { console.error(e); btn.innerText = "Error"; }
+        };
+
+        function calculateStreak(habit) {
+            let streak = 0; let d = new Date(); const todayISO = d.toISOString().split('T')[0];
+            if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) d.setDate(d.getDate() - 1);
+            while(true) { const iso = d.toISOString().split('T')[0]; if(habit.history[iso] === 'done' || habit.history[iso] === true) { streak++; d.setDate(d.getDate()-1); } else break; }
+            return streak;
+        }
+        function getMonthlyStats(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalPossible = window.userData.habits.length * daysInMonth;
+            let totalDone = 0;
+            window.userData.habits.forEach(h => { for(let d=1; d<=daysInMonth; d++) { const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; if(h.history[iso] === 'done' || h.history[iso] === true) totalDone++; } });
+            return { rate: totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0 };
+        }
         function loadNoteForDate(iso) {
-            const dateParts = iso.split('-');
-            const localDate = new Date(dateParts[0], dateParts[1]-1, dateParts[2]);
-            const displayDate = localDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
+            const displayDate = new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
             document.getElementById('noteDateDisplay').innerText = displayDate;
-            document.getElementById('dailyNoteInput').value = userData.notes[iso] || "";
+            document.getElementById('dailyNoteInput').value = (window.userData.notes && window.userData.notes[iso]) || "";
         }
-
-        function saveNote() {
-            const val = document.getElementById('dailyNoteInput').value;
-            userData.notes[selectedDateISO] = val;
-            saveData();
-            renderCalendarWidget(); 
-            const btn = document.getElementById('saveNoteBtn');
-            const originalText = btn.innerText;
-            btn.innerText = "Saved Successfully";
-            btn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-            setTimeout(() => { 
-                btn.innerText = originalText;
-                btn.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-            }, 1500);
-        }
-
-        function updateHeaderDate() {
-            document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        }
-
-        function initWeather() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(async (pos) => {
-                    try {
-                        const { latitude, longitude } = pos.coords;
-                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-                        const data = await res.json();
-                        document.getElementById('weatherTemp').innerText = Math.round(data.current_weather.temperature) + "°";
-                        document.getElementById('weatherWidget').classList.remove('opacity-0');
-                    } catch(e) {}
-                });
-            }
-        }
-
+        function updateHeaderDate() { document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
         function setupModal() {
-            window.selectedColorIndex = 0;
-            window.selectedIconIndex = 0;
-
-            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => 
-                `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full bg-gradient-to-br ${c.gradient} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`
-            ).join('');
-            
-            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => 
-                `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`
-            ).join('');
+            window.selectedColorIndex = 0; window.selectedIconIndex = 0;
+            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full bg-gradient-to-br ${c.gradient} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`).join('');
+            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`).join('');
             setupModalUI();
         }
-
         function setupModalUI() {
-            document.querySelectorAll('.color-opt').forEach(el => {
-                const idx = parseInt(el.dataset.idx);
-                el.style.borderColor = idx === window.selectedColorIndex ? 'white' : 'transparent';
-                if(idx === window.selectedColorIndex) el.classList.add('scale-110');
-                else el.classList.remove('scale-110');
-            });
-            document.querySelectorAll('.icon-opt').forEach(el => {
-                const idx = parseInt(el.dataset.idx);
-                el.className = `icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border ${idx === window.selectedIconIndex ? 'bg-white text-black border-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`;
-            });
+            document.querySelectorAll('.color-opt').forEach(el => { const idx = parseInt(el.dataset.idx); el.style.borderColor = idx === window.selectedColorIndex ? 'white' : 'transparent'; });
+            document.querySelectorAll('.icon-opt').forEach(el => { const idx = parseInt(el.dataset.idx); el.className = `icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border ${idx === window.selectedIconIndex ? 'bg-white text-black border-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`; });
         }
-
-        function openModal() { document.getElementById('addModal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('addModal').classList.add('hidden'); }
-
-        window.onload = initApp;
-
+        window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
+        window.closeReportModal = () => document.getElementById('reportModal').classList.add('hidden');
     </script>
 </body>
 </html>
