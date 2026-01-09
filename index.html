@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+    <!-- Styles -->
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #050505; color: #fff; overflow-x: hidden; }
         
@@ -30,6 +31,9 @@
         .modal-animate { animation: modalUp 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
         @keyframes modalUp { from { transform: translateY(100%) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         
+        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         /* Calendar & Interactions */
         .calendar-day { transition: all 0.2s; }
         .calendar-day:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
@@ -47,15 +51,6 @@
 
         input, textarea { background: rgba(0,0,0,0.3) !important; color: white !important; }
         input:focus, textarea:focus { background: rgba(0,0,0,0.5) !important; border-color: rgba(255,255,255,0.2) !important; }
-        
-        /* Auth Buttons */
-        .btn-google { background: white; color: #1f2937; transition: all 0.2s; }
-        .btn-apple { background: white; color: black; transition: all 0.2s; }
-        .btn-provider:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        
-        /* Loading Spinner */
-        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid white; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen selection:bg-pink-500 selection:text-white">
@@ -71,53 +66,37 @@
         <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 shadow-2xl border border-white/10">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center text-3xl text-white mb-5 shadow-lg shadow-pink-500/20">
-                    <i class="fa-solid fa-chart-line"></i>
+                    <i class="fa-solid fa-infinity"></i>
                 </div>
                 <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Life Tracker</h1>
                 <p class="text-gray-400 text-sm mt-2">Design your life.</p>
             </div>
 
-            <!-- Provider Login -->
-            <div class="space-y-3 mb-6">
-                <button onclick="simulateProviderLogin('Google')" class="btn-provider btn-google w-full font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-google text-lg text-red-500"></i> Continue with Google
-                </button>
-                <button onclick="simulateProviderLogin('Apple')" class="btn-provider btn-apple w-full font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-apple text-xl"></i> Continue with Apple
-                </button>
+            <!-- Tabs -->
+            <div class="flex border-b border-white/10 mb-6">
+                <button onclick="switchTab('login')" id="tabLogin" class="flex-1 pb-2 text-sm font-bold text-white border-b-2 border-indigo-500 transition-colors">Sign In</button>
+                <button onclick="switchTab('signup')" id="tabSignup" class="flex-1 pb-2 text-sm font-bold text-gray-500 hover:text-gray-300 transition-colors">Sign Up</button>
             </div>
 
-            <div class="relative py-2 mb-4">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
-                <div class="relative flex justify-center text-xs uppercase"><span class="bg-black/50 px-2 text-gray-500 rounded-full backdrop-blur-sm">Or with Email</span></div>
-            </div>
-
-            <!-- Unified Form -->
-            <form id="authForm" class="space-y-4" onsubmit="handleUnifiedAuth(event)">
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
                 <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
-                
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Your Name</label>
-                    <input type="text" id="authName" placeholder="What should we call you?" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
+                <div class="space-y-3">
+                    <input type="email" id="loginEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
+                    <input type="password" id="loginPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                 </div>
+                <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-2">Log In</button>
+            </form>
 
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Email</label>
-                    <input type="email" id="authEmail" placeholder="name@example.com" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
+            <!-- Signup Form -->
+            <form id="signupForm" class="space-y-4 hidden" onsubmit="handleSignup(event)">
+                <div id="signupError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
+                <div class="space-y-3">
+                    <input type="text" id="signupName" placeholder="Full Name" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="email" id="signupEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="password" id="signupPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
                 </div>
-                
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Password</label>
-                    <input type="password" id="authPass" placeholder="Secure Password" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
-                </div>
-
-                <button type="submit" id="authBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30 mt-2 flex items-center justify-center gap-2">
-                    <span class="spinner" id="btnSpinner"></span> <span id="btnText">Connecting...</span>
-                </button>
-                
-                <p id="connectionStatus" class="text-center text-[10px] text-gray-500 mt-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1 animate-pulse"></span> Connecting to cloud...
-                </p>
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-2">Create Account</button>
             </form>
         </div>
     </div>
@@ -127,14 +106,12 @@
         <header class="sticky top-0 z-40 px-6 py-4 glass-panel border-b border-white/5 backdrop-blur-xl">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <div class="relative group">
-                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform" id="userAvatar">U</div>
-                        <div class="absolute top-12 left-0 w-32 bg-[#1a1a20] border border-white/10 rounded-xl shadow-2xl p-2 hidden group-hover:block z-50">
-                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
-                        </div>
+                    <div class="relative group cursor-pointer" onclick="handleLogout()">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform" id="userAvatar">U</div>
+                        <div class="absolute top-12 left-0 bg-red-500/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Log Out</div>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome</p>
+                        <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome Back</p>
                         <h1 class="text-lg font-bold text-white leading-none" id="userNameDisplay">User</h1>
                     </div>
                 </div>
@@ -246,236 +223,145 @@
     </div>
 
     <!-- SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        // CONFIG
+        const USERS_KEY = 'lifetracker_users_v4';
+        const CURRENT_USER_KEY = 'lifetracker_current_v4';
+        const DATA_PREFIX = 'lifetracker_data_v4_';
 
-        // --- CONFIG ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'life-tracker-default';
-
-        // --- GLOBAL STATE ---
-        window.activeUserKey = null; 
+        // GLOBAL STATE
+        window.currentUser = null;
         window.userData = { habits: [], notes: {} };
-        window.userProfile = { name: "User" }; 
         window.viewDate = new Date();
         window.selectedDateISO = new Date().toISOString().split('T')[0];
         window.chartInstance = null;
         window.selectedColorIndex = 0;
         window.selectedIconIndex = 0;
-        let unsubscribe = null;
 
-        // Expanded Colors
-        const COLORS = [
-            { hex: '#4f46e5', bg: 'bg-indigo-600', name: 'Indigo' },
-            { hex: '#db2777', bg: 'bg-pink-600', name: 'Pink' },
-            { hex: '#0891b2', bg: 'bg-cyan-600', name: 'Cyan' },
-            { hex: '#059669', bg: 'bg-emerald-600', name: 'Emerald' },
-            { hex: '#d97706', bg: 'bg-amber-600', name: 'Amber' },
-            { hex: '#7c3aed', bg: 'bg-violet-600', name: 'Violet' },
-            { hex: '#dc2626', bg: 'bg-red-600', name: 'Red' },
-            { hex: '#2563eb', bg: 'bg-blue-600', name: 'Blue' },
-            { hex: '#ea580c', bg: 'bg-orange-600', name: 'Orange' },
-            { hex: '#65a30d', bg: 'bg-lime-600', name: 'Lime' },
-            { hex: '#0d9488', bg: 'bg-teal-600', name: 'Teal' },
-            { hex: '#c026d3', bg: 'bg-fuchsia-600', name: 'Fuchsia' }
-        ];
-        const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase', 'fa-heart', 'fa-star', 'fa-lightbulb', 'fa-gamepad', 'fa-plane', 'fa-camera'];
-
-        // --- AUTH & CONNECTIVITY ---
-        const initAuth = async () => {
-            const statusEl = document.getElementById('connectionStatus');
-            const btn = document.getElementById('authBtn');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+        // INIT
+        function initApp() {
+            const userId = localStorage.getItem(CURRENT_USER_KEY);
+            if (userId) {
+                const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+                const user = users.find(u => u.id === userId);
+                if (user) {
+                    window.currentUser = user;
+                    loadUserData();
+                    showApp();
                 } else {
-                    await signInAnonymously(auth);
+                    showAuth();
                 }
-                statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected to Cloud`;
-                btn.disabled = false;
-                spinner.style.display = 'none';
-                btnText.innerText = "Continue";
-            } catch (error) {
-                console.error("Connection failed:", error);
-                statusEl.innerHTML = `<span class="text-red-400">●</span> Connection Failed. Retrying...`;
-                setTimeout(initAuth, 2000); // Retry logic
+            } else {
+                showAuth();
             }
-        };
-        initAuth();
-
-        const generateUserKey = async (email, pass) => {
-            const raw = `${email.toLowerCase().trim()}_${pass.trim()}`;
-            const msgBuffer = new TextEncoder().encode(raw);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-        };
-
-        const getUserDocRef = (key) => doc(db, 'artifacts', appId, 'public', 'data', 'users_v2', key);
-
-        // Simulated Provider Login
-        window.simulateProviderLogin = async (provider) => {
-            const email = prompt(`Enter your ${provider} Email to continue:`);
-            if(!email || !email.includes('@')) return; 
-            
-            const name = prompt("What should we call you?");
-            if(!name) return;
-
-            const btn = document.querySelector(`.btn-${provider.toLowerCase()}`);
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying...`;
-
-            // Use a dummy "secure" token for provider logins so password isn't needed
-            const key = await generateUserKey(email, 'secure_provider_token_xyz');
-            
-            finishLogin(key, email, name, btn, originalHTML);
-        };
-
-        window.handleUnifiedAuth = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('authName').value.trim();
-            const email = document.getElementById('authEmail').value.trim();
-            const pass = document.getElementById('authPass').value.trim();
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-            const errorEl = document.getElementById('loginError');
-
-            if(!email || !pass) {
-                errorEl.innerText = "Email and Password are required.";
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            spinner.style.display = 'inline-block';
-            btnText.innerText = "Processing...";
-            document.getElementById('authBtn').disabled = true;
-
-            const key = await generateUserKey(email, pass);
-            finishLogin(key, email, name, null, "Continue");
-        };
-
-        async function finishLogin(key, email, nameInput, btnElement, btnOriginalText) {
-            window.activeUserKey = key;
-            localStorage.setItem('lt_session_email', email);
-            localStorage.setItem('lt_session_key', key); 
-
-            const docRef = getUserDocRef(key);
-            
-            unsubscribe = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // CRITICAL FIX: Ensure all arrays exist
-                    window.userData = { 
-                        habits: data.habits || [], 
-                        notes: data.notes || {} 
-                    };
-                    
-                    // Logic: Prioritize NEW name input over old DB name if user explicitly logged in again
-                    if(nameInput && nameInput !== "User" && data.name !== nameInput) {
-                        setDoc(docRef, { name: nameInput }, { merge: true });
-                        window.userProfile.name = nameInput;
-                    } else {
-                        window.userProfile.name = data.name || nameInput || "User";
-                    }
-                } else {
-                    // New user creation
-                    window.userData = { habits: [], notes: {} };
-                    window.userProfile.name = nameInput || "User";
-                    setDoc(docRef, {
-                        habits: [],
-                        notes: {},
-                        name: nameInput || "User",
-                        email: email,
-                        created: new Date().toISOString()
-                    });
-                }
-                
-                // Update UI Name
-                document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
-                document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
-                
-                // Show App
-                document.getElementById('authScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
-                
-                updateHeaderDate();
-                setupModal();
-                renderAllViews();
-                
-                // Reset Button State if applicable
-                if(btnElement) {
-                    btnElement.innerHTML = btnOriginalText;
-                    btnElement.disabled = false;
-                }
-            }, (error) => {
-                console.error("Data Sync Error:", error);
-                const errEl = document.getElementById('loginError');
-                errEl.innerText = "Error syncing data. Retrying...";
-                errEl.classList.remove('hidden');
-            });
         }
 
-        // Auto-login if session exists
-        const savedKey = localStorage.getItem('lt_session_key');
-        if(savedKey) {
-            // Restore UI state while loading
+        function showAuth() {
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('appScreen').classList.add('hidden');
+        }
+
+        function showApp() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
-            
-            window.activeUserKey = savedKey;
-            const docRef = getUserDocRef(savedKey);
-            
-            unsubscribe = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
-                    window.userProfile.name = data.name || "User";
-                    
-                    document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
-                    document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
-                    
-                    updateHeaderDate();
-                    setupModal();
-                    renderAllViews();
-                }
-            });
-        }
-
-        window.handleLogout = () => {
-            if(confirm("Log out?")) {
-                if(unsubscribe) unsubscribe();
-                localStorage.removeItem('lt_session_key');
-                localStorage.removeItem('lt_session_email');
-                window.location.reload();
-            }
-        };
-
-        window.saveData = async () => {
-            if(!window.activeUserKey) return;
-            const docRef = getUserDocRef(window.activeUserKey);
-            await setDoc(docRef, { 
-                habits: window.userData.habits, 
-                notes: window.userData.notes,
-                name: window.userProfile.name 
-            }, { merge: true });
-        };
-
-        // --- RENDERERS ---
-        window.renderAllViews = () => {
+            document.getElementById('userNameDisplay').innerText = window.currentUser.name.split(' ')[0];
+            document.getElementById('userAvatar').innerText = window.currentUser.name[0].toUpperCase();
+            updateHeaderDate();
             renderCalendarWidget();
             renderHabitsMonthly();
             loadNoteForDate(window.selectedDateISO);
             updateGlobalStats();
             setTimeout(initChart, 200);
+            setupModal();
+        }
+
+        // AUTH
+        window.switchTab = (tab) => {
+            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('signupForm').classList.toggle('hidden', tab !== 'signup');
+            document.getElementById('tabLogin').className = tab === 'login' ? 'flex-1 pb-2 text-sm font-bold text-white border-b-2 border-indigo-500 transition-colors' : 'flex-1 pb-2 text-sm font-bold text-gray-500 hover:text-gray-300 transition-colors';
+            document.getElementById('tabSignup').className = tab === 'signup' ? 'flex-1 pb-2 text-sm font-bold text-white border-b-2 border-indigo-500 transition-colors' : 'flex-1 pb-2 text-sm font-bold text-gray-500 hover:text-gray-300 transition-colors';
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('signupError').classList.add('hidden');
         };
 
+        window.handleLogin = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+            
+            const user = users.find(u => u.email === email && u.password === pass);
+            if (user) {
+                localStorage.setItem(CURRENT_USER_KEY, user.id);
+                window.currentUser = user;
+                loadUserData();
+                showApp();
+                document.getElementById('loginForm').reset();
+            } else {
+                showError('loginError', "Invalid email or password");
+            }
+        };
+
+        window.handleSignup = (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pass = document.getElementById('signupPass').value.trim();
+            
+            if(!name || !email || !pass) return showError('signupError', "All fields required");
+            if(pass.length < 4) return showError('signupError', "Password too short");
+
+            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+            if (users.find(u => u.email === email)) return showError('signupError', "Email already exists");
+
+            const newUser = { id: 'u_' + Date.now(), name, email, password: pass };
+            users.push(newUser);
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            localStorage.setItem(CURRENT_USER_KEY, newUser.id);
+            window.currentUser = newUser;
+            
+            // Init empty data
+            window.userData = { habits: [], notes: {} };
+            saveData();
+            
+            showApp();
+            document.getElementById('signupForm').reset();
+        };
+
+        window.handleLogout = () => {
+            if(confirm("Log out?")) {
+                localStorage.removeItem(CURRENT_USER_KEY);
+                window.location.reload();
+            }
+        };
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.classList.remove('hidden');
+        }
+
+        // DATA
+        function loadUserData() {
+            const stored = localStorage.getItem(DATA_PREFIX + window.currentUser.id);
+            window.userData = stored ? JSON.parse(stored) : { habits: [], notes: {} };
+        }
+
+        window.saveData = () => {
+            localStorage.setItem(DATA_PREFIX + window.currentUser.id, JSON.stringify(window.userData));
+        };
+
+        // --- CONSTANTS ---
+        const COLORS = [
+            { hex: '#4f46e5', bg: 'bg-indigo-600' }, { hex: '#db2777', bg: 'bg-pink-600' }, { hex: '#0891b2', bg: 'bg-cyan-600' },
+            { hex: '#059669', bg: 'bg-emerald-600' }, { hex: '#d97706', bg: 'bg-amber-600' }, { hex: '#7c3aed', bg: 'bg-violet-600' },
+            { hex: '#dc2626', bg: 'bg-red-600' }, { hex: '#2563eb', bg: 'bg-blue-600' }, { hex: '#ea580c', bg: 'bg-orange-600' },
+            { hex: '#65a30d', bg: 'bg-lime-600' }, { hex: '#0d9488', bg: 'bg-teal-600' }, { hex: '#c026d3', bg: 'bg-fuchsia-600' }
+        ];
+        const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase', 'fa-heart', 'fa-star', 'fa-lightbulb', 'fa-gamepad', 'fa-plane', 'fa-camera'];
+
+        // --- CALENDAR ---
         window.renderCalendarWidget = () => {
             const year = window.viewDate.getFullYear();
             const month = window.viewDate.getMonth();
@@ -494,11 +380,10 @@
                 grid.innerHTML += `<div onclick="selectDate('${iso}')" class="calendar-day h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center text-xs cursor-pointer relative ${isSelected ? 'selected-date' : 'text-gray-400 bg-white/5'} ${isToday && !isSelected ? 'border border-indigo-500 text-indigo-400' : ''} ${hasNote ? 'has-note-dot' : ''}">${d}</div>`;
             }
         };
-
-        window.changeMonth = (dir) => { window.viewDate.setMonth(window.viewDate.getMonth() + dir); renderAllViews(); };
+        window.changeMonth = (dir) => { window.viewDate.setMonth(window.viewDate.getMonth() + dir); showApp(); };
         window.selectDate = (iso) => { window.selectedDateISO = iso; renderCalendarWidget(); loadNoteForDate(iso); };
 
-        // --- HABIT LOGIC (FIXED) ---
+        // --- HABITS ---
         window.renderHabitsMonthly = () => {
             const list = document.getElementById('habitList');
             list.innerHTML = '';
@@ -522,40 +407,16 @@
                     let cellClass = 'cell-empty';
                     let content = `<span class="text-[9px] opacity-70">${d}</span>`;
                     
-                    if(status === 'done' || status === true) { 
-                        cellClass = 'cell-done'; 
-                        content = `<i class="fa-solid fa-check text-[10px]"></i>`; 
-                    } else if(status === 'missed') { 
-                        cellClass = 'cell-missed'; 
-                        content = `<i class="fa-solid fa-xmark text-[10px]"></i>`; 
-                    }
-                    if(isFuture) cellClass = 'cell-future';
-
+                    if(status === 'done' || status === true) { cellClass = 'cell-done'; content = `<i class="fa-solid fa-check text-[10px]"></i>`; } 
+                    else if(status === 'missed') { cellClass = 'cell-missed'; content = `<i class="fa-solid fa-xmark text-[10px]"></i>`; }
                     const style = (status === 'done' || status === true) ? `style="background-color: ${color.hex}"` : '';
-
                     gridHTML += `<div onclick="toggleHabit('${habit.id}', '${iso}')" class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer ${cellClass}" ${style}>${content}</div>`;
                 }
                 const streak = calculateStreak(habit);
                 const card = document.createElement('div');
                 card.className = `glass-panel rounded-2xl p-5 border-l-4`;
                 card.style.borderLeftColor = color.hex;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shadow-lg shadow-black/20" style="background: ${color.hex}">
-                                <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
-                            </div>
-                            <div class="overflow-hidden">
-                                <h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3>
-                                <div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
-                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak
-                                </div>
-                            </div>
-                        </div>
-                        <button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1 place-items-center">${gridHTML}</div>
-                `;
+                card.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shadow-lg shadow-black/20" style="background: ${color.hex}"><i class="fa-solid ${ICONS[habit.iconIndex]}"></i></div><div class="overflow-hidden"><h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3><div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5"><i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak</div></div></div><button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button></div><div class="grid grid-cols-7 gap-1 place-items-center">${gridHTML}</div>`;
                 list.appendChild(card);
             });
         };
@@ -565,56 +426,46 @@
             const h = window.userData.habits.find(x => x.id === id);
             if(h) {
                 const current = h.history[iso];
-                // Toggle: Done -> Missed -> Empty
                 if (current === 'done' || current === true) h.history[iso] = 'missed';
                 else if (current === 'missed') delete h.history[iso];
                 else h.history[iso] = 'done';
-                
-                window.saveData(); 
+                saveData(); 
                 renderHabitsMonthly(); 
                 updateGlobalStats();
                 updateChart();
             }
         };
 
+        // --- DATA OPS ---
         window.addHabit = (e) => {
             e.preventDefault();
             const name = document.getElementById('habitName').value.trim();
             if(name) {
                 if (!window.userData.habits) window.userData.habits = [];
-                window.userData.habits.push({ 
-                    id: Date.now().toString(), 
-                    name, 
-                    colorIndex: window.selectedColorIndex, 
-                    iconIndex: window.selectedIconIndex, 
-                    history: {} 
-                });
-                window.saveData(); 
-                closeModal();
-                renderAllViews();
-                document.getElementById('habitName').value = '';
+                window.userData.habits.push({ id: Date.now().toString(), name, colorIndex: window.selectedColorIndex, iconIndex: window.selectedIconIndex, history: {} });
+                saveData(); closeModal(); document.getElementById('habitName').value = '';
+                showApp();
             }
         };
-
         window.deleteHabit = (id) => {
             if(confirm("Delete habit permanently?")) {
                 window.userData.habits = window.userData.habits.filter(h => h.id !== id);
-                window.saveData();
-                renderAllViews();
+                saveData();
+                showApp();
             }
         };
-
         window.saveNote = () => {
             const val = document.getElementById('dailyNoteInput').value;
             if(!window.userData.notes) window.userData.notes = {};
             window.userData.notes[window.selectedDateISO] = val;
-            window.saveData();
+            saveData();
             const btn = document.getElementById('saveNoteBtn');
             const originalText = btn.innerText;
             btn.innerText = "Saved";
             setTimeout(() => { btn.innerText = originalText; }, 1000);
         };
 
+        // --- STATS ---
         window.updateGlobalStats = () => {
             if(!window.userData.habits || window.userData.habits.length === 0) { document.getElementById('globalProgress').innerText = "0%"; document.getElementById('bestStreak').innerText = "0"; return; }
             const year = window.viewDate.getFullYear();
@@ -675,17 +526,54 @@
             window.chartInstance.update();
         }
 
+        // --- HELPERS ---
+        function calculateStreak(habit) {
+            let streak = 0; let d = new Date(); const todayISO = d.toISOString().split('T')[0];
+            if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) d.setDate(d.getDate() - 1);
+            while(true) { const iso = d.toISOString().split('T')[0]; if(habit.history[iso] === 'done' || habit.history[iso] === true) { streak++; d.setDate(d.getDate()-1); } else break; }
+            return streak;
+        }
+        function getMonthlyStats(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalPossible = window.userData.habits.length * daysInMonth;
+            let totalDone = 0;
+            window.userData.habits.forEach(h => { for(let d=1; d<=daysInMonth; d++) { const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; if(h.history[iso] === 'done' || h.history[iso] === true) totalDone++; } });
+            return { rate: totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0 };
+        }
+        function getHabitScore(habit, monthIndex) {
+            let score = 0; const year = new Date().getFullYear(); const days = new Date(year, monthIndex + 1, 0).getDate();
+            for(let d=1; d<=days; d++) { const iso = `${year}-${String(monthIndex+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; if(habit.history[iso] === 'done' || habit.history[iso] === true) score++; } return score;
+        }
+        function loadNoteForDate(iso) {
+            const displayDate = new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
+            document.getElementById('noteDateDisplay').innerText = displayDate;
+            document.getElementById('dailyNoteInput').value = (window.userData.notes && window.userData.notes[iso]) || "";
+        }
+        function updateHeaderDate() { document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
+        
+        window.setModalColor = (idx) => { window.selectedColorIndex = idx; document.querySelectorAll('.color-opt').forEach((el, i) => { el.style.borderColor = i === idx ? 'white' : 'transparent'; el.style.transform = i === idx ? 'scale(1.1)' : 'scale(1)'; }); };
+        window.setModalIcon = (idx) => { window.selectedIconIndex = idx; document.querySelectorAll('.icon-opt').forEach((el, i) => { if(i === idx) { el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white text-black border-white'; } else { el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'; } }); };
+        function setupModal() {
+            window.selectedColorIndex = 0; window.selectedIconIndex = 0;
+            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => `<div onclick="setModalColor(${i})" class="color-opt cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`).join('');
+            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => `<div onclick="setModalIcon(${i})" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`).join('');
+            window.setModalColor(0); window.setModalIcon(0);
+        }
+        
+        window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
+        window.closeReportModal = () => document.getElementById('reportModal').classList.add('hidden');
         window.openReportModal = () => {
             if(!window.userData.habits || window.userData.habits.length === 0) return alert("Add habits first!");
-            const today = new Date();
-            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
+            const today = new Date(); const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
             let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
+            let weakestHabit = window.userData.habits.reduce((p, c) => getHabitScore(p, today.getMonth()) < getHabitScore(c, today.getMonth()) ? p : c);
+            let topHabit = window.userData.habits.reduce((p, c) => getHabitScore(p, today.getMonth()) > getHabitScore(c, today.getMonth()) ? p : c);
             
-            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> A ${grade} grade shows dedication! Keep consistent to reach the next level.</p></div>`;
+            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.currentUser.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="grid grid-cols-2 gap-6 mb-10"><div class="bg-white/5 p-6 rounded-2xl border border-white/5"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Grade</p><div class="flex items-baseline gap-3"><span class="text-5xl font-bold text-white">${grade}</span><span class="text-sm font-medium ${currentStats.rate >= 50 ? 'text-emerald-400' : 'text-orange-400'}">${currentStats.rate}% Success</span></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col justify-center"><div class="mb-3"><p class="text-gray-500 text-[10px] uppercase">Top Strength</p><p class="text-white font-bold text-lg"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i> ${topHabit.name}</p></div><div><p class="text-gray-500 text-[10px] uppercase">Needs Focus</p><p class="text-white font-bold text-lg"><i class="fa-solid fa-arrow-trend-up text-pink-500 mr-2"></i> ${weakestHabit.name}</p></div></div></div><div class="mb-8"><h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest mb-4 border-l-2 border-indigo-500 pl-3">AI Suggestions</h3><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p class="mb-2"><i class="fa-solid fa-lightbulb text-indigo-400 mr-2"></i> <strong>Focus on "${weakestHabit.name}":</strong> Try doing this earlier in the day.</p><p><i class="fa-solid fa-chart-line text-indigo-400 mr-2"></i> <strong>Goal:</strong> Aim for ${Math.min(100, currentStats.rate + 10)}% next month!</p></div></div>`;
             document.getElementById('reportContent').innerHTML = html;
             document.getElementById('reportModal').classList.remove('hidden');
         };
-
         window.downloadPDF = async () => {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
@@ -704,57 +592,7 @@
             } catch(e) { console.error(e); btn.innerText = "Error"; }
         };
 
-        function calculateStreak(habit) {
-            let streak = 0; let d = new Date(); const todayISO = d.toISOString().split('T')[0];
-            if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) d.setDate(d.getDate() - 1);
-            while(true) { const iso = d.toISOString().split('T')[0]; if(habit.history[iso] === 'done' || habit.history[iso] === true) { streak++; d.setDate(d.getDate()-1); } else break; }
-            return streak;
-        }
-        function getMonthlyStats(year, month) {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let totalPossible = window.userData.habits.length * daysInMonth;
-            let totalDone = 0;
-            window.userData.habits.forEach(h => { for(let d=1; d<=daysInMonth; d++) { const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; if(h.history[iso] === 'done' || h.history[iso] === true) totalDone++; } });
-            return { rate: totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0 };
-        }
-        function loadNoteForDate(iso) {
-            const displayDate = new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
-            document.getElementById('noteDateDisplay').innerText = displayDate;
-            document.getElementById('dailyNoteInput').value = (window.userData.notes && window.userData.notes[iso]) || "";
-        }
-        function updateHeaderDate() { document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
-        
-        // SELECTORS LOGIC (GLOBAL)
-        window.setModalColor = (idx) => {
-            window.selectedColorIndex = idx;
-            document.querySelectorAll('.color-opt').forEach((el, i) => {
-                el.style.borderColor = i === idx ? 'white' : 'transparent';
-                el.style.transform = i === idx ? 'scale(1.1)' : 'scale(1)';
-            });
-        };
-        
-        window.setModalIcon = (idx) => {
-            window.selectedIconIndex = idx;
-            document.querySelectorAll('.icon-opt').forEach((el, i) => {
-                if(i === idx) {
-                    el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white text-black border-white';
-                } else {
-                    el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white/5 text-gray-400 border-white/5 hover:bg-white/10';
-                }
-            });
-        };
-
-        function setupModal() {
-            window.selectedColorIndex = 0; window.selectedIconIndex = 0;
-            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => `<div onclick="setModalColor(${i})" class="color-opt cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`).join('');
-            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => `<div onclick="setModalIcon(${i})" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`).join('');
-            window.setModalColor(0);
-            window.setModalIcon(0);
-        }
-        
-        window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
-        window.closeReportModal = () => document.getElementById('reportModal').classList.add('hidden');
+        window.onload = initApp;
     </script>
 </body>
 </html>
