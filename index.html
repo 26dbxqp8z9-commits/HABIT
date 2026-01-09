@@ -25,27 +25,33 @@
         @keyframes float { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(30px, -50px); } 66% { transform: translate(-20px, 20px); } }
 
         /* Glass Components */
-        .glass-panel { background: rgba(20, 20, 25, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .glass-panel { background: rgba(20, 20, 25, 0.65); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .modal-animate { animation: modalUp 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
         @keyframes modalUp { from { transform: translateY(100%) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Calendar & Inputs */
+        
+        /* Calendar & Interactions */
         .calendar-day { transition: all 0.2s; }
         .calendar-day:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
         .selected-date { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; font-weight: bold; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
         .has-note-dot::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #fbbf24; border-radius: 50%; }
-        .status-cell { transition: all 0.2s; }
-        .status-cell:active { transform: scale(0.9); }
         
+        /* Habit Cell States */
+        .status-cell { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); user-select: none; }
+        .status-cell:active { transform: scale(0.85); }
+        .cell-done { background: var(--habit-color); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .cell-missed { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .cell-empty { background: rgba(255, 255, 255, 0.05); color: #6b7280; }
+        .cell-empty:hover { background: rgba(255, 255, 255, 0.1); }
+        .cell-future { opacity: 0.1; cursor: default; pointer-events: none; }
+
         input, textarea { background: rgba(0,0,0,0.3) !important; color: white !important; }
         input:focus, textarea:focus { background: rgba(0,0,0,0.5) !important; border-color: rgba(255,255,255,0.2) !important; }
         
-        /* Spinner */
-        .loader { border: 2px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Auth Buttons */
+        .btn-google { background: white; color: #1f2937; transition: all 0.2s; }
+        .btn-apple { background: white; color: black; transition: all 0.2s; }
+        .btn-provider:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body class="min-h-screen selection:bg-pink-500 selection:text-white">
@@ -61,40 +67,50 @@
         <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 shadow-2xl border border-white/10">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center text-3xl text-white mb-5 shadow-lg shadow-pink-500/20">
-                    <i class="fa-solid fa-infinity"></i>
+                    <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Life Tracker</h1>
-                <p class="text-gray-400 text-sm mt-2">Cloud Sync Ready</p>
+                <p class="text-gray-400 text-sm mt-2">Design your life.</p>
             </div>
 
-            <!-- Login Form -->
-            <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
-                <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
-                <div class="space-y-4">
-                    <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
-                    <input type="password" id="loginPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
-                </div>
-                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4 disabled:opacity-50">Log In</button>
-                <div class="text-center mt-6">
-                    <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Create an account</button>
-                </div>
-            </form>
+            <!-- Provider Login -->
+            <div class="space-y-3 mb-6">
+                <button onclick="simulateProviderLogin('Google')" class="btn-provider btn-google w-full font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-google text-lg text-red-500"></i> Continue with Google
+                </button>
+                <button onclick="simulateProviderLogin('Apple')" class="btn-provider btn-apple w-full font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-apple text-xl"></i> Continue with Apple
+                </button>
+            </div>
 
-            <!-- Signup Form -->
-            <form id="signupForm" class="space-y-4 hidden" onsubmit="handleSignup(event)">
-                <div id="signupError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
-                <div class="space-y-3">
-                    <input type="text" id="signupName" placeholder="Full Name" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
-                    <input type="email" id="signupEmail" placeholder="Email Address" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
-                    <input type="password" id="signupPass" placeholder="Password (min 6 chars)" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+            <div class="relative py-2 mb-4">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-black/50 px-2 text-gray-500 rounded-full backdrop-blur-sm">Or with Email</span></div>
+            </div>
+
+            <!-- Unified Form -->
+            <form id="authForm" class="space-y-4" onsubmit="handleUnifiedAuth(event)">
+                <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Your Name</label>
+                    <input type="text" id="authName" placeholder="What should we call you?" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
                 </div>
-                <button type="submit" id="signupBtn" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4 disabled:opacity-50">Create Account</button>
-                <div class="text-center mt-6">
-                    <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Back to Login</button>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Email</label>
+                    <input type="email" id="authEmail" placeholder="name@example.com" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
                 </div>
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Password</label>
+                    <input type="password" id="authPass" placeholder="Secure Password" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
+                </div>
+
+                <button type="submit" id="authBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30 mt-2">
+                    Continue
+                </button>
             </form>
-            
-            <div id="connectionStatus" class="mt-6 text-center text-[10px] text-gray-500">Connecting to Cloud...</div>
         </div>
     </div>
 
@@ -110,7 +126,7 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome Back</p>
+                        <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-0.5">Welcome</p>
                         <h1 class="text-lg font-bold text-white leading-none" id="userNameDisplay">User</h1>
                     </div>
                 </div>
@@ -141,8 +157,8 @@
                 <div class="lg:col-span-8 glass-panel rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                     <div class="flex justify-between items-start mb-4 z-10 relative">
                         <div>
-                            <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-area text-pink-500"></i> Consistency Flow</h2>
-                            <p class="text-xs text-gray-400">Performance Trend</p>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-area text-pink-500"></i> Consistency</h2>
+                            <p class="text-xs text-gray-400">Monthly flow</p>
                         </div>
                         <div class="flex gap-4">
                             <div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Success</p><p class="text-xl font-bold text-indigo-400" id="globalProgress">0%</p></div>
@@ -188,6 +204,7 @@
     </div>
 
     <!-- MODALS -->
+    <!-- Report -->
     <div id="reportModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity" onclick="closeReportModal()"></div>
         <div class="relative z-10 w-full max-w-2xl h-[90vh] flex flex-col">
@@ -201,6 +218,7 @@
         </div>
     </div>
 
+    <!-- Add Habit -->
     <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity" onclick="closeModal()"></div>
         <div class="glass-panel w-full max-w-md rounded-3xl p-8 relative z-10 modal-animate shadow-2xl border border-white/10">
@@ -211,10 +229,10 @@
             <form onsubmit="addHabit(event)">
                 <div class="space-y-6">
                     <div><label class="text-xs font-bold text-gray-400 uppercase mb-2 block tracking-wider">Name</label><input type="text" id="habitName" required class="w-full border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base bg-black/40"></div>
-                    <div><label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Color</label><div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar" id="colorPicker"></div></div>
+                    <div><label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Color Theme</label><div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar" id="colorPicker"></div></div>
                     <div><label class="text-xs font-bold text-gray-400 uppercase mb-3 block tracking-wider">Icon</label><div class="grid grid-cols-6 gap-3" id="iconPicker"></div></div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] transition-all">Create</button>
+                <button type="submit" class="mt-8 w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] transition-all">Create Habit</button>
             </form>
         </div>
     </div>
@@ -222,185 +240,186 @@
     <!-- SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIG & INIT ---
+        // --- CONFIG ---
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'life-tracker-default';
 
-        // --- AUTHENTICATION ENGINE ---
-        // 1. Establish Secure Connection
-        const initAuth = async () => {
-            const statusEl = document.getElementById('connectionStatus');
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                    statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected (Secure)`;
-                } else {
-                    await signInAnonymously(auth);
-                    statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected (Public Access)`;
-                }
-            } catch (error) {
-                console.error("Connection failed:", error);
-                statusEl.innerHTML = `<span class="text-red-400">●</span> Connection Failed: ${error.message}`;
-            }
-        };
-        initAuth();
+        // --- GLOBAL STATE ---
+        window.activeUserKey = null; 
+        window.userData = { habits: [], notes: {} };
+        window.userProfile = { name: "User" }; 
+        window.viewDate = new Date();
+        window.selectedDateISO = new Date().toISOString().split('T')[0];
+        window.chartInstance = null;
+        window.selectedColorIndex = 0;
+        window.selectedIconIndex = 0;
+        let unsubscribe = null;
 
-        // 2. Encryption Utils (Client-Side Security)
-        const hash = async (str) => {
-            const msgBuffer = new TextEncoder().encode(str);
+        // Expanded Colors
+        const COLORS = [
+            { hex: '#4f46e5', bg: 'bg-indigo-600', name: 'Indigo' },
+            { hex: '#db2777', bg: 'bg-pink-600', name: 'Pink' },
+            { hex: '#0891b2', bg: 'bg-cyan-600', name: 'Cyan' },
+            { hex: '#059669', bg: 'bg-emerald-600', name: 'Emerald' },
+            { hex: '#d97706', bg: 'bg-amber-600', name: 'Amber' },
+            { hex: '#7c3aed', bg: 'bg-violet-600', name: 'Violet' },
+            { hex: '#dc2626', bg: 'bg-red-600', name: 'Red' },
+            { hex: '#2563eb', bg: 'bg-blue-600', name: 'Blue' },
+            { hex: '#ea580c', bg: 'bg-orange-600', name: 'Orange' },
+            { hex: '#65a30d', bg: 'bg-lime-600', name: 'Lime' },
+            { hex: '#0d9488', bg: 'bg-teal-600', name: 'Teal' },
+            { hex: '#c026d3', bg: 'bg-fuchsia-600', name: 'Fuchsia' }
+        ];
+        const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase', 'fa-heart', 'fa-star', 'fa-lightbulb', 'fa-gamepad', 'fa-plane', 'fa-camera'];
+
+        // --- AUTH ---
+        signInAnonymously(auth).catch(console.error);
+
+        const generateUserKey = async (email, pass) => {
+            const raw = `${email.toLowerCase().trim()}_${pass.trim()}`;
+            const msgBuffer = new TextEncoder().encode(raw);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
         };
 
-        // 3. User Reference Helper
-        const getUserRef = (email) => {
-            const cleanEmail = email.toLowerCase().trim();
-            const emailId = btoa(cleanEmail).replace(/=/g, ''); // Base64 ID safe for URL
-            return doc(db, 'artifacts', appId, 'public', 'data', 'lifetracker_users', emailId);
+        const getUserDocRef = (key) => doc(db, 'artifacts', appId, 'public', 'data', 'users_v2', key);
+
+        // Simulated Provider Login
+        window.simulateProviderLogin = async (provider) => {
+            const email = prompt(`Enter your ${provider} Email to continue:`);
+            if(!email || !email.includes('@')) return; 
+            
+            const name = prompt("What should we call you?");
+            if(!name) return;
+
+            const btn = document.querySelector(`.btn-${provider.toLowerCase()}`);
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying...`;
+
+            // Use a dummy "secure" token for provider logins
+            const key = await generateUserKey(email, 'secure_provider_token_xyz');
+            
+            finishLogin(key, email, name, btn, originalText);
         };
 
-        // --- HANDLERS ---
-        window.handleSignup = async (e) => {
+        window.handleUnifiedAuth = async (e) => {
             e.preventDefault();
-            const name = document.getElementById('signupName').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const pass = document.getElementById('signupPass').value.trim();
-            const btn = document.getElementById('signupBtn');
-            const errorEl = document.getElementById('signupError');
-
-            if(!name || !email || !pass) return showAuthError(errorEl, "All fields required");
-            if(pass.length < 6) return showAuthError(errorEl, "Password min 6 chars");
-
-            btn.innerHTML = `<span class="loader"></span> Creating...`;
-            btn.disabled = true;
-
-            try {
-                const docRef = getUserRef(email);
-                const docSnap = await getDoc(docRef);
-                
-                if(docSnap.exists()) throw new Error("Email already registered");
-
-                const passwordHash = await hash(pass);
-                const newProfile = {
-                    name: name,
-                    email: email,
-                    password: passwordHash,
-                    habits: [],
-                    notes: {},
-                    createdAt: new Date().toISOString()
-                };
-
-                await setDoc(docRef, newProfile);
-                loginSuccess(newProfile);
-            } catch (err) {
-                showAuthError(errorEl, err.message);
-                btn.innerHTML = "Create Account";
-                btn.disabled = false;
-            }
-        };
-
-        window.handleLogin = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
-            const btn = document.getElementById('loginBtn');
+            const name = document.getElementById('authName').value.trim();
+            const email = document.getElementById('authEmail').value.trim();
+            const pass = document.getElementById('authPass').value.trim();
+            const btn = document.getElementById('authBtn');
             const errorEl = document.getElementById('loginError');
 
-            btn.innerHTML = `<span class="loader"></span> Logging in...`;
+            if(!name || !email || !pass) {
+                errorEl.innerText = "All fields (Name, Email, Password) are required.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
             btn.disabled = true;
 
-            try {
-                const docRef = getUserRef(email);
-                const docSnap = await getDoc(docRef);
-
-                if(!docSnap.exists()) throw new Error("Account not found");
-
-                const data = docSnap.data();
-                const inputHash = await hash(pass);
-
-                if(data.password !== inputHash) throw new Error("Incorrect password");
-
-                loginSuccess(data);
-            } catch(err) {
-                showAuthError(errorEl, err.message);
-                btn.innerHTML = "Log In";
-                btn.disabled = false;
-            }
+            const key = await generateUserKey(email, pass);
+            finishLogin(key, email, name, btn, "Continue");
         };
 
-        function loginSuccess(profile) {
-            window.userProfile = profile;
-            localStorage.setItem('lifetracker_active_email', profile.email);
+        async function finishLogin(key, email, nameInput, btn, btnText) {
+            window.activeUserKey = key;
+            localStorage.setItem('lt_session_email', email);
+            localStorage.setItem('lt_session_key', key); 
+
+            const docRef = getUserDocRef(key);
             
+            unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
+                    
+                    // Logic: Prioritize NEW name input over old DB name if user explicitly logged in again
+                    if(nameInput && nameInput !== "User" && data.name !== nameInput) {
+                        setDoc(docRef, { name: nameInput }, { merge: true });
+                        window.userProfile.name = nameInput;
+                    } else {
+                        window.userProfile.name = data.name || nameInput || "User";
+                    }
+                } else {
+                    // New user creation
+                    window.userData = { habits: [], notes: {} };
+                    window.userProfile.name = nameInput;
+                    setDoc(docRef, {
+                        habits: [],
+                        notes: {},
+                        name: nameInput,
+                        email: email,
+                        created: new Date().toISOString()
+                    });
+                }
+                
+                // Update UI Name
+                document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
+                document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
+                renderAllViews();
+            });
+
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
-            document.getElementById('userNameDisplay').innerText = profile.name.split(' ')[0];
-            document.getElementById('userAvatar').innerText = profile.name[0].toUpperCase();
-
-            // Start Real-time Sync
-            const docRef = getUserRef(profile.email);
-            window.unsubscribeSync = onSnapshot(docRef, (doc) => {
-                if(doc.exists()) {
-                    const data = doc.data();
-                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
-                    renderAllViews();
-                }
-            });
             
             updateHeaderDate();
             setupModal();
+            
+            if(btn) {
+                btn.innerHTML = btnText;
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-login if session exists
+        const savedKey = localStorage.getItem('lt_session_key');
+        if(savedKey) {
+            window.activeUserKey = savedKey;
+            const docRef = getUserDocRef(savedKey);
+            unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
+                    window.userProfile.name = data.name || "User";
+                    
+                    document.getElementById('authScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
+                    document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
+                    
+                    updateHeaderDate();
+                    setupModal();
+                    renderAllViews();
+                }
+            });
         }
 
         window.handleLogout = () => {
             if(confirm("Log out?")) {
-                if(window.unsubscribeSync) window.unsubscribeSync();
-                localStorage.removeItem('lifetracker_active_email');
+                if(unsubscribe) unsubscribe();
+                localStorage.removeItem('lt_session_key');
+                localStorage.removeItem('lt_session_email');
                 window.location.reload();
             }
         };
 
-        // Auto-login persistence
-        const savedEmail = localStorage.getItem('lifetracker_active_email');
-        if(savedEmail) {
-            const docRef = getUserRef(savedEmail);
-            getDoc(docRef).then(doc => {
-                if(doc.exists()) loginSuccess(doc.data());
-            }).catch(() => localStorage.removeItem('lifetracker_active_email'));
-        }
-
-        // --- GLOBAL APP LOGIC ---
-        window.userData = { habits: [], notes: {} };
-        window.viewDate = new Date();
-        window.selectedDateISO = new Date().toISOString().split('T')[0];
-        window.chartInstance = null;
-
         window.saveData = async () => {
-            if(!window.userProfile) return;
-            const docRef = getUserRef(window.userProfile.email);
+            if(!window.activeUserKey) return;
+            const docRef = getUserDocRef(window.activeUserKey);
             await setDoc(docRef, { 
                 habits: window.userData.habits, 
-                notes: window.userData.notes 
+                notes: window.userData.notes,
+                name: window.userProfile.name 
             }, { merge: true });
         };
-
-        // --- UI HELPERS ---
-        function showAuthError(el, msg) { el.innerText = msg; el.classList.remove('hidden'); }
-        window.toggleAuthMode = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.toggle('hidden'); document.getElementById('signupForm').classList.toggle('hidden'); document.getElementById('loginError').classList.add('hidden'); document.getElementById('signupError').classList.add('hidden'); };
-
-        const COLORS = [
-            { bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500', shadow: 'shadow-indigo-500/20', gradient: 'from-indigo-500 to-blue-500' },
-            { bg: 'bg-pink-500', text: 'text-pink-400', border: 'border-pink-500', shadow: 'shadow-pink-500/20', gradient: 'from-pink-500 to-rose-500' },
-            { bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500', shadow: 'shadow-cyan-500/20', gradient: 'from-cyan-500 to-teal-500' },
-            { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500', shadow: 'shadow-emerald-500/20', gradient: 'from-emerald-500 to-green-500' },
-            { bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500', shadow: 'shadow-orange-500/20', gradient: 'from-orange-500 to-yellow-500' },
-        ];
-        const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase'];
 
         // --- RENDERERS ---
         window.renderAllViews = () => {
@@ -433,10 +452,11 @@
         window.changeMonth = (dir) => { window.viewDate.setMonth(window.viewDate.getMonth() + dir); renderAllViews(); };
         window.selectDate = (iso) => { window.selectedDateISO = iso; renderCalendarWidget(); loadNoteForDate(iso); };
 
+        // --- HABIT LOGIC (FIXED) ---
         window.renderHabitsMonthly = () => {
             const list = document.getElementById('habitList');
             list.innerHTML = '';
-            if(window.userData.habits.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); return; }
+            if(!window.userData.habits || window.userData.habits.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); return; }
             document.getElementById('emptyState').classList.add('hidden');
             const year = window.viewDate.getFullYear();
             const month = window.viewDate.getMonth();
@@ -451,16 +471,45 @@
                 for(let d=1; d<=daysInMonth; d++) {
                     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     const status = habit.history[iso];
-                    let cellClass = 'bg-white/5 hover:bg-white/10 text-gray-600';
+                    const isFuture = new Date(iso) > new Date();
+                    
+                    let cellClass = 'cell-empty';
                     let content = `<span class="text-[9px] opacity-70">${d}</span>`;
-                    if (status === 'done' || status === true) { cellClass = `${color.bg} text-white shadow-sm`; content = `<i class="fa-solid fa-check text-[10px]"></i>`; }
-                    else if (status === 'missed') { cellClass = `bg-red-500/20 text-red-400 border border-red-500/30`; content = `<i class="fa-solid fa-xmark text-[10px]"></i>`; }
-                    gridHTML += `<div onclick="toggleHabit('${habit.id}', '${iso}')" class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer group ${cellClass}">${content}</div>`;
+                    
+                    if(status === 'done' || status === true) { 
+                        cellClass = 'cell-done'; 
+                        content = `<i class="fa-solid fa-check text-[10px]"></i>`; 
+                    } else if(status === 'missed') { 
+                        cellClass = 'cell-missed'; 
+                        content = `<i class="fa-solid fa-xmark text-[10px]"></i>`; 
+                    }
+                    if(isFuture) cellClass = 'cell-future';
+
+                    const style = (status === 'done' || status === true) ? `style="background-color: ${color.hex}"` : '';
+
+                    gridHTML += `<div onclick="toggleHabit('${habit.id}', '${iso}')" class="status-cell h-6 w-6 rounded-md flex items-center justify-center cursor-pointer ${cellClass}" ${style}>${content}</div>`;
                 }
                 const streak = calculateStreak(habit);
                 const card = document.createElement('div');
-                card.className = `glass-panel rounded-2xl p-5 border-l-4 ${color.border.replace('border-','border-l-')}`;
-                card.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center text-white text-sm shadow-lg shadow-black/20"><i class="fa-solid ${ICONS[habit.iconIndex]}"></i></div><div class="overflow-hidden"><h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3><div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5"><i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak</div></div></div><button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button></div><div class="grid grid-cols-7 gap-1 place-items-center">${gridHTML}</div>`;
+                card.className = `glass-panel rounded-2xl p-5 border-l-4`;
+                card.style.borderLeftColor = color.hex;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shadow-lg shadow-black/20" style="background: ${color.hex}">
+                                <i class="fa-solid ${ICONS[habit.iconIndex]}"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h3 class="font-bold text-white text-sm truncate w-32 sm:w-40">${habit.name}</h3>
+                                <div class="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                    <i class="fa-solid fa-fire ${streak>0?'text-orange-500':'text-gray-600'}"></i> ${streak} Streak
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteHabit('${habit.id}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 place-items-center">${gridHTML}</div>
+                `;
                 list.appendChild(card);
             });
         };
@@ -470,10 +519,15 @@
             const h = window.userData.habits.find(x => x.id === id);
             if(h) {
                 const current = h.history[iso];
+                // Toggle: Done -> Missed -> Empty
                 if (current === 'done' || current === true) h.history[iso] = 'missed';
                 else if (current === 'missed') delete h.history[iso];
                 else h.history[iso] = 'done';
+                
                 window.saveData(); 
+                renderHabitsMonthly(); 
+                updateGlobalStats();
+                updateChart();
             }
         };
 
@@ -481,10 +535,18 @@
             e.preventDefault();
             const name = document.getElementById('habitName').value.trim();
             if(name) {
-                let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 0;
-                let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 0;
-                window.userData.habits.push({ id: Date.now().toString(), name, colorIndex, iconIndex, history: {} });
-                window.saveData(); closeModal(); document.getElementById('habitName').value = '';
+                if (!window.userData.habits) window.userData.habits = [];
+                window.userData.habits.push({ 
+                    id: Date.now().toString(), 
+                    name, 
+                    colorIndex: window.selectedColorIndex, 
+                    iconIndex: window.selectedIconIndex, 
+                    history: {} 
+                });
+                window.saveData(); 
+                closeModal();
+                renderAllViews();
+                document.getElementById('habitName').value = '';
             }
         };
 
@@ -492,6 +554,7 @@
             if(confirm("Delete habit permanently?")) {
                 window.userData.habits = window.userData.habits.filter(h => h.id !== id);
                 window.saveData();
+                renderAllViews();
             }
         };
 
@@ -507,7 +570,7 @@
         };
 
         window.updateGlobalStats = () => {
-            if(window.userData.habits.length === 0) { document.getElementById('globalProgress').innerText = "0%"; document.getElementById('bestStreak').innerText = "0"; return; }
+            if(!window.userData.habits || window.userData.habits.length === 0) { document.getElementById('globalProgress').innerText = "0%"; document.getElementById('bestStreak').innerText = "0"; return; }
             const year = window.viewDate.getFullYear();
             const month = window.viewDate.getMonth();
             const now = new Date();
@@ -554,7 +617,9 @@
             for(let d=1; d<=daysInMonth; d++) {
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 let count = 0; let total = window.userData.habits.length || 1;
-                window.userData.habits.forEach(h => { if(h.history[iso] === 'done' || h.history[iso] === true) count++; });
+                if(window.userData.habits) {
+                    window.userData.habits.forEach(h => { if(h.history[iso] === 'done' || h.history[iso] === true) count++; });
+                }
                 labels.push(d);
                 if(new Date(iso) > new Date()) data.push(null);
                 else data.push(Math.round((count / total) * 100));
@@ -564,7 +629,35 @@
             window.chartInstance.update();
         }
 
-        // Helpers
+        window.openReportModal = () => {
+            if(!window.userData.habits || window.userData.habits.length === 0) return alert("Add habits first!");
+            const today = new Date();
+            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
+            let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
+            
+            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> A ${grade} grade shows dedication! Keep consistent to reach the next level.</p></div>`;
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        window.downloadPDF = async () => {
+            const btn = document.querySelector('button[onclick="downloadPDF()"]');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+            try {
+                const element = document.getElementById('reportContent');
+                const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#111111' });
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('LifeTracker_Report.pdf');
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Saved!`;
+                setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-download"></i> PDF`, 2000);
+            } catch(e) { console.error(e); btn.innerText = "Error"; }
+        };
+
         function calculateStreak(habit) {
             let streak = 0; let d = new Date(); const todayISO = d.toISOString().split('T')[0];
             if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) d.setDate(d.getDate() - 1);
@@ -584,30 +677,37 @@
             document.getElementById('dailyNoteInput').value = (window.userData.notes && window.userData.notes[iso]) || "";
         }
         function updateHeaderDate() { document.getElementById('headerDateMain').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
-        function setupModal() {
-            window.selectedColorIndex = 0; window.selectedIconIndex = 0;
-            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => `<div onclick="window.selectedColorIndex=${i}; setupModalUI()" class="color-opt cursor-pointer w-10 h-10 rounded-full bg-gradient-to-br ${c.gradient} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`).join('');
-            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => `<div onclick="window.selectedIconIndex=${i}; setupModalUI()" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`).join('');
-            setupModalUI();
-        }
-        function setupModalUI() {
-            document.querySelectorAll('.color-opt').forEach(el => { const idx = parseInt(el.dataset.idx); el.style.borderColor = idx === window.selectedColorIndex ? 'white' : 'transparent'; });
-            document.querySelectorAll('.icon-opt').forEach(el => { const idx = parseInt(el.dataset.idx); el.className = `icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border ${idx === window.selectedIconIndex ? 'bg-white text-black border-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`; });
-        }
-        window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
         
-        window.openReportModal = () => {
-            if(window.userData.habits.length === 0) return alert("Add habits first!");
-            const today = new Date();
-            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
-            let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
-            
-            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> A ${grade} grade shows dedication! Keep consistent to reach the next level.</p></div>`;
-            document.getElementById('reportContent').innerHTML = html;
-            document.getElementById('reportModal').classList.remove('hidden');
+        // SELECTORS LOGIC (GLOBAL)
+        window.setModalColor = (idx) => {
+            window.selectedColorIndex = idx;
+            document.querySelectorAll('.color-opt').forEach((el, i) => {
+                el.style.borderColor = i === idx ? 'white' : 'transparent';
+                el.style.transform = i === idx ? 'scale(1.1)' : 'scale(1)';
+            });
         };
         
+        window.setModalIcon = (idx) => {
+            window.selectedIconIndex = idx;
+            document.querySelectorAll('.icon-opt').forEach((el, i) => {
+                if(i === idx) {
+                    el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white text-black border-white';
+                } else {
+                    el.className = 'icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border bg-white/5 text-gray-400 border-white/5 hover:bg-white/10';
+                }
+            });
+        };
+
+        function setupModal() {
+            window.selectedColorIndex = 0; window.selectedIconIndex = 0;
+            document.getElementById('colorPicker').innerHTML = COLORS.map((c, i) => `<div onclick="setModalColor(${i})" class="color-opt cursor-pointer w-10 h-10 rounded-full ${c.bg} border-2 flex-shrink-0 transition-transform hover:scale-110 shadow-lg" data-idx="${i}"></div>`).join('');
+            document.getElementById('iconPicker').innerHTML = ICONS.map((icon, i) => `<div onclick="setModalIcon(${i})" class="icon-opt cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all border border-white/5" data-idx="${i}"><i class="fa-solid ${icon}"></i></div>`).join('');
+            window.setModalColor(0);
+            window.setModalIcon(0);
+        }
+        
+        window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
         window.closeReportModal = () => document.getElementById('reportModal').classList.add('hidden');
     </script>
 </body>
