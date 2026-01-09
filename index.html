@@ -52,6 +52,10 @@
         .btn-google { background: white; color: #1f2937; transition: all 0.2s; }
         .btn-apple { background: white; color: black; transition: all 0.2s; }
         .btn-provider:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        
+        /* Loading Spinner */
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid white; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen selection:bg-pink-500 selection:text-white">
@@ -107,9 +111,13 @@
                     <input type="password" id="authPass" placeholder="Secure Password" required class="w-full border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-600">
                 </div>
 
-                <button type="submit" id="authBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30 mt-2">
-                    Continue
+                <button type="submit" id="authBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30 mt-2 flex items-center justify-center gap-2">
+                    <span class="spinner" id="btnSpinner"></span> <span id="btnText">Connecting...</span>
                 </button>
+                
+                <p id="connectionStatus" class="text-center text-[10px] text-gray-500 mt-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1 animate-pulse"></span> Connecting to cloud...
+                </p>
             </form>
         </div>
     </div>
@@ -240,7 +248,7 @@
     <!-- SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIG ---
@@ -278,8 +286,30 @@
         ];
         const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase', 'fa-heart', 'fa-star', 'fa-lightbulb', 'fa-gamepad', 'fa-plane', 'fa-camera'];
 
-        // --- AUTH ---
-        signInAnonymously(auth).catch(console.error);
+        // --- AUTH & CONNECTIVITY ---
+        const initAuth = async () => {
+            const statusEl = document.getElementById('connectionStatus');
+            const btn = document.getElementById('authBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected to Cloud`;
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.innerText = "Continue";
+            } catch (error) {
+                console.error("Connection failed:", error);
+                statusEl.innerHTML = `<span class="text-red-400">●</span> Connection Failed. Retrying...`;
+                setTimeout(initAuth, 2000); // Retry logic
+            }
+        };
+        initAuth();
 
         const generateUserKey = async (email, pass) => {
             const raw = `${email.toLowerCase().trim()}_${pass.trim()}`;
@@ -299,13 +329,13 @@
             if(!name) return;
 
             const btn = document.querySelector(`.btn-${provider.toLowerCase()}`);
-            const originalText = btn.innerHTML;
+            const originalHTML = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying...`;
 
-            // Use a dummy "secure" token for provider logins
+            // Use a dummy "secure" token for provider logins so password isn't needed
             const key = await generateUserKey(email, 'secure_provider_token_xyz');
             
-            finishLogin(key, email, name, btn, originalText);
+            finishLogin(key, email, name, btn, originalHTML);
         };
 
         window.handleUnifiedAuth = async (e) => {
@@ -313,23 +343,25 @@
             const name = document.getElementById('authName').value.trim();
             const email = document.getElementById('authEmail').value.trim();
             const pass = document.getElementById('authPass').value.trim();
-            const btn = document.getElementById('authBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
             const errorEl = document.getElementById('loginError');
 
-            if(!name || !email || !pass) {
-                errorEl.innerText = "All fields (Name, Email, Password) are required.";
+            if(!email || !pass) {
+                errorEl.innerText = "Email and Password are required.";
                 errorEl.classList.remove('hidden');
                 return;
             }
 
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
-            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.innerText = "Processing...";
+            document.getElementById('authBtn').disabled = true;
 
             const key = await generateUserKey(email, pass);
-            finishLogin(key, email, name, btn, "Continue");
+            finishLogin(key, email, name, null, "Continue");
         };
 
-        async function finishLogin(key, email, nameInput, btn, btnText) {
+        async function finishLogin(key, email, nameInput, btnElement, btnOriginalText) {
             window.activeUserKey = key;
             localStorage.setItem('lt_session_email', email);
             localStorage.setItem('lt_session_key', key); 
@@ -339,7 +371,11 @@
             unsubscribe = onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    window.userData = { habits: data.habits || [], notes: data.notes || {} };
+                    // CRITICAL FIX: Ensure all arrays exist
+                    window.userData = { 
+                        habits: data.habits || [], 
+                        notes: data.notes || {} 
+                    };
                     
                     // Logic: Prioritize NEW name input over old DB name if user explicitly logged in again
                     if(nameInput && nameInput !== "User" && data.name !== nameInput) {
@@ -351,11 +387,11 @@
                 } else {
                     // New user creation
                     window.userData = { habits: [], notes: {} };
-                    window.userProfile.name = nameInput;
+                    window.userProfile.name = nameInput || "User";
                     setDoc(docRef, {
                         habits: [],
                         notes: {},
-                        name: nameInput,
+                        name: nameInput || "User",
                         email: email,
                         created: new Date().toISOString()
                     });
@@ -364,34 +400,44 @@
                 // Update UI Name
                 document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
                 document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
+                
+                // Show App
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                
+                updateHeaderDate();
+                setupModal();
                 renderAllViews();
+                
+                // Reset Button State if applicable
+                if(btnElement) {
+                    btnElement.innerHTML = btnOriginalText;
+                    btnElement.disabled = false;
+                }
+            }, (error) => {
+                console.error("Data Sync Error:", error);
+                const errEl = document.getElementById('loginError');
+                errEl.innerText = "Error syncing data. Retrying...";
+                errEl.classList.remove('hidden');
             });
-
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            
-            updateHeaderDate();
-            setupModal();
-            
-            if(btn) {
-                btn.innerHTML = btnText;
-                btn.disabled = false;
-            }
         }
 
         // Auto-login if session exists
         const savedKey = localStorage.getItem('lt_session_key');
         if(savedKey) {
+            // Restore UI state while loading
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            
             window.activeUserKey = savedKey;
             const docRef = getUserDocRef(savedKey);
+            
             unsubscribe = onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     window.userData = { habits: data.habits || [], notes: data.notes || {} };
                     window.userProfile.name = data.name || "User";
                     
-                    document.getElementById('authScreen').classList.add('hidden');
-                    document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('userNameDisplay').innerText = window.userProfile.name.split(' ')[0];
                     document.getElementById('userAvatar').innerText = window.userProfile.name[0].toUpperCase();
                     
