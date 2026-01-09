@@ -13,11 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Styles -->
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #050505; color: #fff; overflow-x: hidden; }
         
-        /* Background */
+        /* Liquid Background */
         .liquid-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: #000; overflow: hidden; }
         .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s infinite ease-in-out; }
         .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; }
@@ -25,23 +24,28 @@
         .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #0891b2; animation-delay: -10s; opacity: 0.3; }
         @keyframes float { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(30px, -50px); } 66% { transform: translate(-20px, 20px); } }
 
-        /* UI Components */
+        /* Glass Components */
         .glass-panel { background: rgba(20, 20, 25, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .modal-animate { animation: modalUp 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
-        @keyframes modalUp { from { transform: translateY(100%) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        .modal-animate { animation: modalUp 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+        @keyframes modalUp { from { transform: translateY(100%) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Calendar & Interactions */
+        /* Calendar & Inputs */
         .calendar-day { transition: all 0.2s; }
         .calendar-day:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
         .selected-date { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; font-weight: bold; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
         .has-note-dot::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #fbbf24; border-radius: 50%; }
         .status-cell { transition: all 0.2s; }
         .status-cell:active { transform: scale(0.9); }
+        
         input, textarea { background: rgba(0,0,0,0.3) !important; color: white !important; }
         input:focus, textarea:focus { background: rgba(0,0,0,0.5) !important; border-color: rgba(255,255,255,0.2) !important; }
+        
+        /* Spinner */
+        .loader { border: 2px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen selection:bg-pink-500 selection:text-white">
@@ -67,10 +71,10 @@
             <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
                 <div id="loginError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
                 <div class="space-y-4">
-                    <input type="email" id="loginEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
+                    <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                     <input type="password" id="loginPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-gray-500">
                 </div>
-                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Log In</button>
+                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4 disabled:opacity-50">Log In</button>
                 <div class="text-center mt-6">
                     <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Create an account</button>
                 </div>
@@ -81,14 +85,16 @@
                 <div id="signupError" class="hidden bg-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center border border-red-500/20"></div>
                 <div class="space-y-3">
                     <input type="text" id="signupName" placeholder="Full Name" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
-                    <input type="email" id="signupEmail" placeholder="Email" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
-                    <input type="password" id="signupPass" placeholder="Password" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="email" id="signupEmail" placeholder="Email Address" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
+                    <input type="password" id="signupPass" placeholder="Password (min 6 chars)" required class="w-full border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder-gray-500">
                 </div>
-                <button type="submit" id="signupBtn" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4">Create Account</button>
+                <button type="submit" id="signupBtn" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg mt-4 disabled:opacity-50">Create Account</button>
                 <div class="text-center mt-6">
                     <button type="button" onclick="toggleAuthMode(event)" class="text-xs text-gray-400 hover:text-white transition-colors">Back to Login</button>
                 </div>
             </form>
+            
+            <div id="connectionStatus" class="mt-6 text-center text-[10px] text-gray-500">Connecting to Cloud...</div>
         </div>
     </div>
 
@@ -182,7 +188,6 @@
     </div>
 
     <!-- MODALS -->
-    <!-- Report -->
     <div id="reportModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity" onclick="closeReportModal()"></div>
         <div class="relative z-10 w-full max-w-2xl h-[90vh] flex flex-col">
@@ -196,7 +201,6 @@
         </div>
     </div>
 
-    <!-- Add Habit -->
     <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity" onclick="closeModal()"></div>
         <div class="glass-panel w-full max-w-md rounded-3xl p-8 relative z-10 modal-animate shadow-2xl border border-white/10">
@@ -218,44 +222,50 @@
     <!-- SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // --- CONFIG & INIT ---
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'life-tracker-default';
 
-        // Globals
-        window.userProfile = null; // { name, email }
-        window.userData = { habits: [], notes: {} };
-        window.viewDate = new Date();
-        window.selectedDateISO = new Date().toISOString().split('T')[0];
-        window.chartInstance = null;
-        let unsubscribe = null;
+        // --- AUTHENTICATION ENGINE ---
+        // 1. Establish Secure Connection
+        const initAuth = async () => {
+            const statusEl = document.getElementById('connectionStatus');
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected (Secure)`;
+                } else {
+                    await signInAnonymously(auth);
+                    statusEl.innerHTML = `<span class="text-emerald-400">●</span> Connected (Public Access)`;
+                }
+            } catch (error) {
+                console.error("Connection failed:", error);
+                statusEl.innerHTML = `<span class="text-red-400">●</span> Connection Failed: ${error.message}`;
+            }
+        };
+        initAuth();
 
-        // --- AUTH & DATA LOGIC (Universal Cloud System) ---
-        // We use Anonymous Auth to connect to DB, then manage user profiles manually in a public collection
-        // This bypasses specific Auth Provider restrictions while ensuring cross-device sync via email/pass.
-
-        // Initialize connection
-        signInAnonymously(auth).catch(console.error);
-
-        // Utilities
+        // 2. Encryption Utils (Client-Side Security)
         const hash = async (str) => {
             const msgBuffer = new TextEncoder().encode(str);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
         };
 
-        const getUserDocRef = async (email) => {
-            const emailId = btoa(email.toLowerCase().trim());
-            return doc(db, 'artifacts', appId, 'public', 'data', 'user_profiles', emailId);
+        // 3. User Reference Helper
+        const getUserRef = (email) => {
+            const cleanEmail = email.toLowerCase().trim();
+            const emailId = btoa(cleanEmail).replace(/=/g, ''); // Base64 ID safe for URL
+            return doc(db, 'artifacts', appId, 'public', 'data', 'lifetracker_users', emailId);
         };
 
-        // Handlers
+        // --- HANDLERS ---
         window.handleSignup = async (e) => {
             e.preventDefault();
             const name = document.getElementById('signupName').value.trim();
@@ -267,10 +277,11 @@
             if(!name || !email || !pass) return showAuthError(errorEl, "All fields required");
             if(pass.length < 6) return showAuthError(errorEl, "Password min 6 chars");
 
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating...`;
+            btn.innerHTML = `<span class="loader"></span> Creating...`;
+            btn.disabled = true;
 
             try {
-                const docRef = await getUserDocRef(email);
+                const docRef = getUserRef(email);
                 const docSnap = await getDoc(docRef);
                 
                 if(docSnap.exists()) throw new Error("Email already registered");
@@ -281,7 +292,8 @@
                     email: email,
                     password: passwordHash,
                     habits: [],
-                    notes: {}
+                    notes: {},
+                    createdAt: new Date().toISOString()
                 };
 
                 await setDoc(docRef, newProfile);
@@ -289,6 +301,7 @@
             } catch (err) {
                 showAuthError(errorEl, err.message);
                 btn.innerHTML = "Create Account";
+                btn.disabled = false;
             }
         };
 
@@ -299,10 +312,11 @@
             const btn = document.getElementById('loginBtn');
             const errorEl = document.getElementById('loginError');
 
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Logging in...`;
+            btn.innerHTML = `<span class="loader"></span> Logging in...`;
+            btn.disabled = true;
 
             try {
-                const docRef = await getUserDocRef(email);
+                const docRef = getUserRef(email);
                 const docSnap = await getDoc(docRef);
 
                 if(!docSnap.exists()) throw new Error("Account not found");
@@ -316,78 +330,68 @@
             } catch(err) {
                 showAuthError(errorEl, err.message);
                 btn.innerHTML = "Log In";
+                btn.disabled = false;
             }
         };
 
         function loginSuccess(profile) {
             window.userProfile = profile;
-            // Save minimal session to local storage to persist refresh
-            localStorage.setItem('lifetracker_user_email', profile.email);
+            localStorage.setItem('lifetracker_active_email', profile.email);
             
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = profile.name.split(' ')[0];
             document.getElementById('userAvatar').innerText = profile.name[0].toUpperCase();
 
-            // Start Sync
-            startDataSync(profile.email);
-            
-            // Init UI
-            updateHeaderDate();
-            setupModal();
-        }
-
-        async function startDataSync(email) {
-            const docRef = await getUserDocRef(email);
-            unsubscribe = onSnapshot(docRef, (doc) => {
+            // Start Real-time Sync
+            const docRef = getUserRef(profile.email);
+            window.unsubscribeSync = onSnapshot(docRef, (doc) => {
                 if(doc.exists()) {
                     const data = doc.data();
                     window.userData = { habits: data.habits || [], notes: data.notes || {} };
                     renderAllViews();
                 }
             });
+            
+            updateHeaderDate();
+            setupModal();
         }
-
-        window.saveData = async () => {
-            if(!window.userProfile) return;
-            const docRef = await getUserDocRef(window.userProfile.email);
-            // Merge update
-            const updatePayload = {
-                habits: window.userData.habits,
-                notes: window.userData.notes
-            };
-            await setDoc(docRef, updatePayload, { merge: true });
-        };
 
         window.handleLogout = () => {
             if(confirm("Log out?")) {
-                if(unsubscribe) unsubscribe();
-                localStorage.removeItem('lifetracker_user_email');
+                if(window.unsubscribeSync) window.unsubscribeSync();
+                localStorage.removeItem('lifetracker_active_email');
                 window.location.reload();
             }
         };
 
-        // Auto Login Check
-        const savedEmail = localStorage.getItem('lifetracker_user_email');
+        // Auto-login persistence
+        const savedEmail = localStorage.getItem('lifetracker_active_email');
         if(savedEmail) {
-            // Re-fetch profile to ensure validity
-            getUserDocRef(savedEmail).then(getDoc).then(doc => {
+            const docRef = getUserRef(savedEmail);
+            getDoc(docRef).then(doc => {
                 if(doc.exists()) loginSuccess(doc.data());
-                else localStorage.removeItem('lifetracker_user_email');
-            });
+            }).catch(() => localStorage.removeItem('lifetracker_active_email'));
         }
 
+        // --- GLOBAL APP LOGIC ---
+        window.userData = { habits: [], notes: {} };
+        window.viewDate = new Date();
+        window.selectedDateISO = new Date().toISOString().split('T')[0];
+        window.chartInstance = null;
+
+        window.saveData = async () => {
+            if(!window.userProfile) return;
+            const docRef = getUserRef(window.userProfile.email);
+            await setDoc(docRef, { 
+                habits: window.userData.habits, 
+                notes: window.userData.notes 
+            }, { merge: true });
+        };
+
+        // --- UI HELPERS ---
         function showAuthError(el, msg) { el.innerText = msg; el.classList.remove('hidden'); }
         window.toggleAuthMode = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.toggle('hidden'); document.getElementById('signupForm').classList.toggle('hidden'); document.getElementById('loginError').classList.add('hidden'); document.getElementById('signupError').classList.add('hidden'); };
-
-        // --- RENDER FUNCTIONS ---
-        window.renderAllViews = () => {
-            renderCalendarWidget();
-            renderHabitsMonthly();
-            loadNoteForDate(window.selectedDateISO);
-            updateGlobalStats();
-            setTimeout(initChart, 200);
-        };
 
         const COLORS = [
             { bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500', shadow: 'shadow-indigo-500/20', gradient: 'from-indigo-500 to-blue-500' },
@@ -397,6 +401,15 @@
             { bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500', shadow: 'shadow-orange-500/20', gradient: 'from-orange-500 to-yellow-500' },
         ];
         const ICONS = ['fa-check', 'fa-book', 'fa-person-running', 'fa-glass-water', 'fa-dumbbell', 'fa-code', 'fa-carrot', 'fa-brain', 'fa-money-bill', 'fa-bed', 'fa-music', 'fa-briefcase'];
+
+        // --- RENDERERS ---
+        window.renderAllViews = () => {
+            renderCalendarWidget();
+            renderHabitsMonthly();
+            loadNoteForDate(window.selectedDateISO);
+            updateGlobalStats();
+            setTimeout(initChart, 200);
+        };
 
         window.renderCalendarWidget = () => {
             const year = window.viewDate.getFullYear();
@@ -471,9 +484,7 @@
                 let colorIndex = window.selectedColorIndex !== undefined ? window.selectedColorIndex : 0;
                 let iconIndex = window.selectedIconIndex !== undefined ? window.selectedIconIndex : 0;
                 window.userData.habits.push({ id: Date.now().toString(), name, colorIndex, iconIndex, history: {} });
-                window.saveData(); 
-                closeModal(); 
-                document.getElementById('habitName').value = '';
+                window.saveData(); closeModal(); document.getElementById('habitName').value = '';
             }
         };
 
@@ -553,34 +564,7 @@
             window.chartInstance.update();
         }
 
-        window.openReportModal = () => {
-            if(window.userData.habits.length === 0) return alert("Add habits first!");
-            const today = new Date();
-            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
-            let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
-            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> Keep consistent! You are doing great.</p></div>`;
-            document.getElementById('reportContent').innerHTML = html;
-            document.getElementById('reportModal').classList.remove('hidden');
-        };
-
-        window.downloadPDF = async () => {
-            const btn = document.querySelector('button[onclick="downloadPDF()"]');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
-            try {
-                const element = document.getElementById('reportContent');
-                const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#111111' });
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgData = canvas.toDataURL('image/png');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('LifeTracker_Report.pdf');
-                btn.innerHTML = `<i class="fa-solid fa-check"></i> Saved!`;
-                setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-download"></i> PDF`, 2000);
-            } catch(e) { console.error(e); btn.innerText = "Error"; }
-        };
-
+        // Helpers
         function calculateStreak(habit) {
             let streak = 0; let d = new Date(); const todayISO = d.toISOString().split('T')[0];
             if(habit.history[todayISO] !== 'done' && habit.history[todayISO] !== true) d.setDate(d.getDate() - 1);
@@ -612,6 +596,18 @@
         }
         window.openModal = () => document.getElementById('addModal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('addModal').classList.add('hidden');
+        
+        window.openReportModal = () => {
+            if(window.userData.habits.length === 0) return alert("Add habits first!");
+            const today = new Date();
+            const currentStats = getMonthlyStats(today.getFullYear(), today.getMonth());
+            let grade = 'C'; if(currentStats.rate >= 90) grade = 'A+'; else if(currentStats.rate >= 80) grade = 'A'; else if(currentStats.rate >= 70) grade = 'B'; else if(currentStats.rate >= 40) grade = 'D'; else grade = 'F';
+            
+            const html = `<div class="flex justify-between items-start mb-8 border-b border-white/10 pb-6"><div><h1 class="text-3xl font-bold text-white mb-1">Monthly Report</h1><p class="text-gray-400 text-sm">Prepared for ${window.userProfile.name}</p></div><div class="text-right"><p class="text-indigo-400 font-bold uppercase tracking-widest text-xs">Period</p><p class="text-xl font-bold text-white">${today.toLocaleString('default', {month:'long', year:'numeric'})}</p></div></div><div class="bg-white/5 p-6 rounded-2xl border border-white/5 mb-6 text-center"><p class="text-gray-400 text-xs uppercase tracking-widest mb-2">Overall Performance</p><div class="text-5xl font-bold text-white mb-2">${grade}</div><p class="text-xl font-medium text-emerald-400">${currentStats.rate}% Success Rate</p></div><div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed"><p><strong><i class="fa-solid fa-robot"></i> Analysis:</strong> A ${grade} grade shows dedication! Keep consistent to reach the next level.</p></div>`;
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+        
         window.closeReportModal = () => document.getElementById('reportModal').classList.add('hidden');
     </script>
 </body>
